@@ -36,8 +36,12 @@ class TimezonePickerActivity : AppCompatActivity() {
                 val offset = TimeFormatter.formatOffset(zone, clock, locale)
                 TimezoneRow(
                     id = zoneId,
-                    title = zone.getDisplayName(TextStyle.FULL, locale),
-                    subtitle = getString(R.string.timezone_row_subtitle, offset, zoneId),
+                    title = zoneId,
+                    subtitle = getString(
+                        R.string.timezone_row_subtitle,
+                        zone.getDisplayName(TextStyle.FULL, locale),
+                        offset
+                    ),
                     offset = offset
                 )
             }
@@ -90,8 +94,6 @@ private data class TimezoneRow(
 
 private object TimezoneRowComparator : Comparator<TimezoneRow> {
     override fun compare(left: TimezoneRow, right: TimezoneRow): Int {
-        val titleCompare = String.CASE_INSENSITIVE_ORDER.compare(left.title, right.title)
-        if (titleCompare != 0) return titleCompare
         return String.CASE_INSENSITIVE_ORDER.compare(left.id, right.id)
     }
 }
