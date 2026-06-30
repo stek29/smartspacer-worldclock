@@ -25,6 +25,7 @@
     <string name="time_format_12h_short">12h</string>
     <string name="time_format_24h_short">24h</string>
     <string name="custom_label_title">Custom label</string>
+    <string name="custom_label_helper">Final SmartSpacer text is limited to 12 characters; labels shorten as needed</string>
     <string name="custom_label_summary">Long labels may be truncated</string>
     <string name="show_offset_label_title">Show GMT offset label</string>
     <string name="show_offset_label_summary">Ignored when a custom label is set</string>

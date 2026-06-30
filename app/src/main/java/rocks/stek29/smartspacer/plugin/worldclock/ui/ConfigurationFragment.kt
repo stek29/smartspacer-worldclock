@@ -21,6 +21,7 @@ import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerComplicationProvider
 import kotlinx.coroutines.flow.first
@@ -54,6 +55,7 @@ class ConfigurationFragment : Fragment() {
     private lateinit var timezoneTitle: TextView
     private lateinit var timezoneSubtitle: TextView
     private lateinit var timeFormatGroup: MaterialButtonToggleGroup
+    private lateinit var customLabelContainer: TextInputLayout
     private lateinit var customLabel: TextInputEditText
     private lateinit var showOffset: MaterialSwitch
 
@@ -94,6 +96,7 @@ class ConfigurationFragment : Fragment() {
         timezoneTitle = view.findViewById(R.id.timezone_title)
         timezoneSubtitle = view.findViewById(R.id.timezone_subtitle)
         timeFormatGroup = view.findViewById(R.id.time_format_group)
+        customLabelContainer = view.findViewById(R.id.custom_label_container)
         customLabel = view.findViewById(R.id.custom_label)
         showOffset = view.findViewById(R.id.show_offset)
     }
@@ -152,12 +155,23 @@ class ConfigurationFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
             override fun afterTextChanged(s: Editable?) {
                 if (bindingConfig) return
-                updateConfig { copy(customLabel = s?.toString()?.trim().orEmpty()) }
+                val label = s?.toString()?.trim().orEmpty()
+                updateConfig {
+                    copy(
+                        customLabel = label,
+                        showOffsetLabel = if (label.isNotBlank()) false else showOffsetLabel
+                    )
+                }
             }
         })
         showOffset.setOnCheckedChangeListener { _, checked ->
             if (bindingConfig) return@setOnCheckedChangeListener
-            updateConfig { copy(showOffsetLabel = checked) }
+            updateConfig {
+                copy(
+                    showOffsetLabel = checked,
+                    customLabel = if (checked) "" else customLabel
+                )
+            }
         }
     }
 
@@ -191,6 +205,8 @@ class ConfigurationFragment : Fragment() {
         }
         showOffset.isChecked = data.showOffsetLabel
         showOffset.isEnabled = data.customLabel.isBlank()
+        customLabelContainer.isEnabled = !data.showOffsetLabel
+        customLabel.isEnabled = !data.showOffsetLabel
         bindTimezone(data)
         bindPreview(data)
         bindingConfig = false

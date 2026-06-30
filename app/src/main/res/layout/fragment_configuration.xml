@@ -282,7 +282,11 @@
             app:boxCornerRadiusBottomStart="22dp"
             app:boxCornerRadiusTopEnd="22dp"
             app:boxCornerRadiusTopStart="22dp"
-            app:endIconMode="clear_text">
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp"
+            app:helperText="@string/custom_label_helper"
+            app:endIconMode="clear_text"
+            app:helperTextEnabled="true">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/custom_label"
