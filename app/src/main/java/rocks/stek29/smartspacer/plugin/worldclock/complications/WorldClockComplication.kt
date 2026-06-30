@@ -51,13 +51,7 @@ class WorldClockComplication : SmartspacerComplicationProvider() {
         val data = smartspacerId?.let { getStoredConfig(it) }
         val icon = data?.let { WorldClockIconStyle.drawableFor(it.iconStyle) } ?: R.drawable.ic_world_clock
         return Config(
-            label = when {
-                data?.mode == WorldClockComplicationData.Mode.HOME -> {
-                    context.getString(R.string.settings_label_home, data.timezoneId)
-                }
-                data != null -> context.getString(R.string.settings_label_zone, data.timezoneId)
-                else -> context.getString(R.string.complication_world_clock_label)
-            },
+            label = context.getString(R.string.complication_world_clock_label),
             description = when {
                 data?.mode == WorldClockComplicationData.Mode.HOME -> {
                     context.getString(R.string.settings_description_home, data.timezoneId)

@@ -6,11 +6,9 @@
     <string name="preview_visible">Visible</string>
     <string name="preview_hidden_home">Hidden in Home mode for the current device timezone</string>
     <string name="complication_world_clock_label">World Clock</string>
-    <string name="settings_label_home">World Clock - Home (%1$s)</string>
-    <string name="settings_label_zone">World Clock - %1$s</string>
-    <string name="complication_world_clock_description">Current time in a selected timezone</string>
-    <string name="settings_description_home">Home (%1$s)</string>
-    <string name="settings_description_zone">%1$s</string>
+    <string name="complication_world_clock_description">Shows the current time in a selected timezone.</string>
+    <string name="settings_description_home">Shows the current time at home in %1$s when your device is in a different timezone.</string>
+    <string name="settings_description_zone">Shows the current time in %1$s.</string>
     <string name="mode_title">Mode</string>
     <string name="mode_normal">Normal</string>
     <string name="mode_home">Home</string>
