@@ -34,15 +34,19 @@ class TimezonePickerActivity : AppCompatActivity() {
             .map { zoneId ->
                 val zone = ZoneId.of(zoneId)
                 val offset = TimeFormatter.formatOffset(zone, clock, locale)
+                val displayName = zone.getDisplayName(TextStyle.FULL, locale)
+                val subtitle = getString(
+                    R.string.timezone_row_subtitle,
+                    displayName,
+                    offset
+                )
                 TimezoneRow(
                     id = zoneId,
                     title = zoneId,
-                    subtitle = getString(
-                        R.string.timezone_row_subtitle,
-                        zone.getDisplayName(TextStyle.FULL, locale),
-                        offset
-                    ),
-                    offset = offset
+                    subtitle = subtitle,
+                    offset = offset,
+                    searchText = listOf(zoneId, displayName, subtitle, offset)
+                        .joinToString(separator = " ")
                 )
             }
             .sortedWith(TimezoneRowComparator)
@@ -72,9 +76,7 @@ class TimezonePickerActivity : AppCompatActivity() {
             zones
         } else {
             zones.filter {
-                it.title.contains(normalized, ignoreCase = true) ||
-                    it.id.contains(normalized, ignoreCase = true) ||
-                    it.offset.contains(normalized, ignoreCase = true)
+                it.searchText.contains(normalized, ignoreCase = true)
             }
         }
         adapter.submit(rows)
@@ -89,7 +91,8 @@ private data class TimezoneRow(
     val id: String,
     val title: String,
     val subtitle: String,
-    val offset: String
+    val offset: String,
+    val searchText: String
 )
 
 private object TimezoneRowComparator : Comparator<TimezoneRow> {
