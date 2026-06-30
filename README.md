@@ -52,11 +52,7 @@ Release APK:
 ./gradlew assembleRelease
 ```
 
-Without signing credentials, the release task produces an unsigned APK at:
-
-```text
-app/build/outputs/apk/release/app-release-unsigned.apk
-```
+Release builds require signing credentials and fail early if they are missing.
 
 ## Release Signing
 

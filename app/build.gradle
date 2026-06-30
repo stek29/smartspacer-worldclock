@@ -3,6 +3,8 @@ plugins {
     id "org.jetbrains.kotlin.android"
 }
 
+def releaseSigningConfigured = false
+
 android {
     namespace "rocks.stek29.smartspacer.plugin.worldclock"
     compileSdk 37
@@ -31,11 +33,18 @@ android {
                 storePassword keystoreProperties["storePassword"]
                 keyAlias keystoreProperties["keyAlias"]
                 keyPassword keystoreProperties["keyPassword"]
-            } else if (System.getenv("ANDROID_KEYSTORE_FILE") != null) {
+                releaseSigningConfigured = true
+            } else if (
+                System.getenv("ANDROID_KEYSTORE_FILE") != null &&
+                    System.getenv("ANDROID_KEYSTORE_PASSWORD") != null &&
+                    System.getenv("ANDROID_KEY_ALIAS") != null &&
+                    System.getenv("ANDROID_KEY_PASSWORD") != null
+            ) {
                 storeFile file(System.getenv("ANDROID_KEYSTORE_FILE"))
                 storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
                 keyAlias System.getenv("ANDROID_KEY_ALIAS")
                 keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                releaseSigningConfigured = true
             }
         }
     }
@@ -57,6 +66,18 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+    }
+}
+
+tasks.matching { it.name == "preReleaseBuild" }.configureEach {
+    doFirst {
+        if (!releaseSigningConfigured) {
+            throw new GradleException(
+                "Release signing credentials are required. Configure keystore.properties " +
+                    "or ANDROID_KEYSTORE_FILE, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, " +
+                    "and ANDROID_KEY_PASSWORD."
+            )
+        }
     }
 }
 
