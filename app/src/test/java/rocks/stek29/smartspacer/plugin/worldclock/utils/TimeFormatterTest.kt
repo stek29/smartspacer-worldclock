@@ -68,6 +68,66 @@ class TimeFormatterTest {
     }
 
     @Test
+    fun offsetLabelFallsBackToCompactSignedOffset() {
+        val clock = fixedClock("2026-06-30T12:00:00Z")
+
+        val content = TimeFormatter.truncateOffsetContent(
+            time = "9:00 PM",
+            zone = ZoneId.of("Asia/Tokyo"),
+            clock = clock,
+            locale = Locale.US
+        )
+
+        assertEquals("9:00 PM +9", content)
+        assertTrue(content.length <= TimeFormatter.MAX_CONTENT_LENGTH)
+    }
+
+    @Test
+    fun halfHourOffsetCanUseDecimalFallback() {
+        val clock = fixedClock("2026-06-30T12:00:00Z")
+
+        val content = TimeFormatter.truncateOffsetContent(
+            time = "9:00 PM",
+            zone = ZoneId.of("Asia/Kolkata"),
+            clock = clock,
+            locale = Locale.US
+        )
+
+        assertEquals("9:00 PM +5.5", content)
+        assertTrue(content.length <= TimeFormatter.MAX_CONTENT_LENGTH)
+    }
+
+    @Test
+    fun offsetLabelIsOmittedWhenCompactValueDoesNotFit() {
+        val clock = fixedClock("2026-06-30T12:00:00Z")
+
+        val content = TimeFormatter.truncateOffsetContent(
+            time = "11:00 PM",
+            zone = ZoneId.of("Asia/Kolkata"),
+            clock = clock,
+            locale = Locale.US
+        )
+
+        assertEquals("11:00 PM", content)
+        assertTrue(content.length <= TimeFormatter.MAX_CONTENT_LENGTH)
+    }
+
+    @Test
+    fun offsetLabelUsesFullGmtLabelWhenItFits() {
+        val clock = fixedClock("2026-06-30T12:00:00Z")
+
+        val content = TimeFormatter.truncateOffsetContent(
+            time = "09:00",
+            zone = ZoneId.of("Asia/Tokyo"),
+            clock = clock,
+            locale = Locale.US
+        )
+
+        assertEquals("09:00 GMT+9", content)
+        assertTrue(content.length <= TimeFormatter.MAX_CONTENT_LENGTH)
+    }
+
+    @Test
     fun explicitTimeFormatBindsSelectedTimezone() {
         val clock = fixedClock("2026-06-30T12:00:00Z")
 
