@@ -12,8 +12,14 @@ Each complication instance has independent settings for timezone, mode, time for
 - DST-aware offset comparison.
 - System, 12-hour, or 24-hour time format.
 - Optional custom label or dynamic GMT offset label.
-- Minute-level updates via SmartSpacer broadcast provider.
+- Minute-level updates via SmartSpacer broadcast provider while the complication is visible.
 - Tap action opens the system clock/alarms app.
+
+## Battery behaviour
+
+Home mode avoids registering per-minute `ACTION_TIME_TICK` updates while the complication is hidden because the device's current UTC offset matches the configured home timezone. It still listens for time, timezone, and date changes so SmartSpacer can re-check whether the complication should become visible.
+
+This intentionally trades a small amount of DST-transition precision for lower idle wakeups: if two zones have the same offset and later diverge only because of a daylight-saving transition, the hidden complication may not become visible until the next date/time/timezone broadcast rather than exactly at the transition minute.
 
 ## Requirements
 
