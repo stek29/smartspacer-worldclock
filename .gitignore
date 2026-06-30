@@ -1,6 +1,7 @@
 *.iml
 .gradle/
 .gradle-home/
+.kotlin/
 /build/
 /app/build/
 /local.properties

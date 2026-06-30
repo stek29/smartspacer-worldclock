@@ -1,10 +1,11 @@
 plugins {
     id "com.android.application"
+    id "org.jetbrains.kotlin.android"
 }
 
 android {
     namespace "rocks.stek29.smartspacer.plugin.worldclock"
-    compileSdk 36
+    compileSdk 37
 
     defaultConfig {
         applicationId "rocks.stek29.smartspacer.plugin.worldclock"
@@ -54,20 +55,20 @@ android {
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    kotlin {
-        jvmToolchain(17)
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
 
 dependencies {
-    implementation "com.kieronquinn.smartspacer:sdk-plugin:1.1"
-    implementation "io.insert-koin:koin-android:4.0.4"
+    implementation "com.kieronquinn.smartspacer:sdk-plugin:1.1.2"
+    implementation "io.insert-koin:koin-android:4.2.1"
     implementation "com.google.code.gson:gson:2.14.0"
     implementation "androidx.datastore:datastore-preferences:1.1.4"
     implementation "androidx.preference:preference-ktx:1.2.1"
     implementation "androidx.appcompat:appcompat:1.7.1"
     implementation "androidx.recyclerview:recyclerview:1.4.0"
-    implementation "com.google.android.material:material:1.12.0"
+    implementation "com.google.android.material:material:1.14.0"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
 
     testImplementation "junit:junit:4.13.2"
