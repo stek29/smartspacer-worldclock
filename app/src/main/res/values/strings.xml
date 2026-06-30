@@ -2,6 +2,9 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="app_name">SmartSpacer World Clock</string>
     <string name="configuration_title">World Clock</string>
+    <string name="preview_title">SmartSpacer preview</string>
+    <string name="preview_visible">Visible</string>
+    <string name="preview_hidden_home">Hidden in Home mode for the current device timezone</string>
     <string name="complication_world_clock_label">World Clock</string>
     <string name="settings_label_home">World Clock - Home (%1$s)</string>
     <string name="settings_label_zone">World Clock - %1$s</string>

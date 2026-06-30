@@ -46,8 +46,8 @@ class ConfigurationFragment : Fragment() {
     private var bindingConfig = false
 
     private lateinit var previewIcon: ImageView
-    private lateinit var previewTime: TextView
-    private lateinit var previewLabel: TextView
+    private lateinit var previewContent: TextView
+    private lateinit var previewState: TextView
     private lateinit var iconGroup: MaterialButtonToggleGroup
     private lateinit var modeGroup: MaterialButtonToggleGroup
     private lateinit var timezoneCard: MaterialCardView
@@ -86,8 +86,8 @@ class ConfigurationFragment : Fragment() {
 
     private fun bindViews(view: View) {
         previewIcon = view.findViewById(R.id.preview_icon)
-        previewTime = view.findViewById(R.id.preview_time)
-        previewLabel = view.findViewById(R.id.preview_label)
+        previewContent = view.findViewById(R.id.preview_content)
+        previewState = view.findViewById(R.id.preview_state)
         iconGroup = view.findViewById(R.id.icon_group)
         modeGroup = view.findViewById(R.id.mode_group)
         timezoneCard = view.findViewById(R.id.timezone_card)
@@ -210,19 +210,19 @@ class ConfigurationFragment : Fragment() {
 
     private fun bindPreview(data: WorldClockComplicationData) {
         previewIcon.setImageResource(WorldClockIconStyle.drawableFor(data.iconStyle))
-        previewTime.text = TimeFormatter.formatTime(
-            requireContext(),
-            ZoneId.of(data.timezoneId),
-            data.timeFormat
-        )
-        previewLabel.text = when {
-            data.customLabel.isNotBlank() -> data.customLabel
-            data.showOffsetLabel -> TimeFormatter.formatOffset(
-                ZoneId.of(data.timezoneId),
-                Clock.systemUTC(),
-                Locale.getDefault()
+        if (TimeFormatter.isVisible(data)) {
+            previewContent.text = TimeFormatter.buildContent(requireContext(), data)
+            previewContent.alpha = 1f
+            previewIcon.alpha = 1f
+            previewState.text = getString(R.string.preview_visible)
+        } else {
+            previewContent.text = TimeFormatter.buildContent(
+                requireContext(),
+                data.copy(mode = WorldClockComplicationData.Mode.NORMAL)
             )
-            else -> data.timezoneId
+            previewContent.alpha = 0.52f
+            previewIcon.alpha = 0.52f
+            previewState.text = getString(R.string.preview_hidden_home)
         }
     }
 
