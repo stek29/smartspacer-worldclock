@@ -14,8 +14,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import rocks.stek29.smartspacer.plugin.worldclock.R
+import rocks.stek29.smartspacer.plugin.worldclock.utils.TimeFormatter
+import java.time.Clock
 import java.time.ZoneId
 import java.time.format.TextStyle
+import java.util.Comparator
 import java.util.Locale
 
 class TimezonePickerActivity : AppCompatActivity() {
@@ -25,19 +28,20 @@ class TimezonePickerActivity : AppCompatActivity() {
         finish()
     }
     private val zones by lazy {
+        val clock = Clock.systemUTC()
+        val locale = Locale.getDefault()
         ZoneId.getAvailableZoneIds()
             .map { zoneId ->
                 val zone = ZoneId.of(zoneId)
+                val offset = TimeFormatter.formatOffset(zone, clock, locale)
                 TimezoneRow(
                     id = zoneId,
-                    title = getString(
-                        R.string.timezone_display_format,
-                        zone.getDisplayName(TextStyle.FULL, Locale.getDefault()),
-                        zoneId
-                    )
+                    title = zone.getDisplayName(TextStyle.FULL, locale),
+                    subtitle = getString(R.string.timezone_row_subtitle, offset, zoneId),
+                    offset = offset
                 )
             }
-            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.title })
+            .sortedWith(TimezoneRowComparator)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -65,7 +69,8 @@ class TimezonePickerActivity : AppCompatActivity() {
         } else {
             zones.filter {
                 it.title.contains(normalized, ignoreCase = true) ||
-                    it.id.contains(normalized, ignoreCase = true)
+                    it.id.contains(normalized, ignoreCase = true) ||
+                    it.offset.contains(normalized, ignoreCase = true)
             }
         }
         adapter.submit(rows)
@@ -78,8 +83,18 @@ class TimezonePickerActivity : AppCompatActivity() {
 
 private data class TimezoneRow(
     val id: String,
-    val title: String
+    val title: String,
+    val subtitle: String,
+    val offset: String
 )
+
+private object TimezoneRowComparator : Comparator<TimezoneRow> {
+    override fun compare(left: TimezoneRow, right: TimezoneRow): Int {
+        val titleCompare = String.CASE_INSENSITIVE_ORDER.compare(left.title, right.title)
+        if (titleCompare != 0) return titleCompare
+        return String.CASE_INSENSITIVE_ORDER.compare(left.id, right.id)
+    }
+}
 
 private class TimezoneAdapter(
     private val onClick: (String) -> Unit
@@ -111,9 +126,11 @@ private class TimezoneAdapter(
     ) : RecyclerView.ViewHolder(itemView) {
 
         private val title = itemView.findViewById<TextView>(R.id.title)
+        private val subtitle = itemView.findViewById<TextView>(R.id.subtitle)
 
         fun bind(row: TimezoneRow) {
             title.text = row.title
+            subtitle.text = row.subtitle
             itemView.setOnClickListener { onClick(row.id) }
         }
     }
