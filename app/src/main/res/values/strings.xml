@@ -37,10 +37,10 @@
     <string name="icon_style_travel">Travel</string>
     <string name="icon_style_globe">Globe</string>
     <string name="requirement_timezone_offset_label">Timezone Offset</string>
-    <string name="requirement_timezone_offset_description">Requires the selected timezone to have a different GMT offset from this device.</string>
-    <string name="requirement_timezone_offset_description_configured">%1$s is %2$s; this device is %3$s.</string>
-    <string name="requirement_preview_title">Requirement preview</string>
-    <string name="requirement_timezone_offset_preview_met">Requirement met</string>
-    <string name="requirement_timezone_offset_preview_not_met">Requirement not met</string>
+    <string name="requirement_timezone_offset_description">Only show when the selected timezone has a different GMT offset from this device.</string>
+    <string name="requirement_timezone_offset_description_configured">Only show when %1$s (%2$s) differs from this device (%3$s).</string>
+    <string name="requirement_preview_title">Preview</string>
+    <string name="requirement_timezone_offset_preview_met">Will show</string>
+    <string name="requirement_timezone_offset_preview_not_met">Will be hidden</string>
     <string name="requirement_timezone_offset_preview_detail">%1$s is %2$s; %3$s is %4$s.</string>
 </resources>
