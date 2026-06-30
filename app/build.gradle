@@ -1,0 +1,75 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    namespace "rocks.stek29.smartspacer.plugin.worldclock"
+    compileSdk 36
+
+    defaultConfig {
+        applicationId "rocks.stek29.smartspacer.plugin.worldclock"
+        minSdk 29
+        targetSdk 36
+        versionCode 1
+        versionName "0.1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    signingConfigs {
+        release {
+            def keystorePropertiesFile = rootProject.file("keystore.properties")
+            if (keystorePropertiesFile.exists()) {
+                def keystoreProperties = new Properties()
+                keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+                storeFile file(keystoreProperties["storeFile"])
+                storePassword keystoreProperties["storePassword"]
+                keyAlias keystoreProperties["keyAlias"]
+                keyPassword keystoreProperties["keyPassword"]
+            } else if (System.getenv("ANDROID_KEYSTORE_FILE") != null) {
+                storeFile file(System.getenv("ANDROID_KEYSTORE_FILE"))
+                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlin {
+        jvmToolchain(17)
+    }
+}
+
+dependencies {
+    implementation "com.kieronquinn.smartspacer:sdk-plugin:1.1"
+    implementation "io.insert-koin:koin-android:4.0.4"
+    implementation "com.google.code.gson:gson:2.14.0"
+    implementation "androidx.datastore:datastore-preferences:1.1.4"
+    implementation "androidx.preference:preference-ktx:1.2.1"
+    implementation "androidx.appcompat:appcompat:1.7.1"
+    implementation "androidx.recyclerview:recyclerview:1.4.0"
+    implementation "com.google.android.material:material:1.12.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
+
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "com.google.code.gson:gson:2.14.0"
+}

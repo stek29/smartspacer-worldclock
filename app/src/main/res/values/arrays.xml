@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="mode_entries">
+        <item>@string/mode_normal</item>
+        <item>@string/mode_home</item>
+    </string-array>
+    <string-array name="mode_values">
+        <item>NORMAL</item>
+        <item>HOME</item>
+    </string-array>
+    <string-array name="time_format_entries">
+        <item>@string/time_format_system</item>
+        <item>@string/time_format_12h</item>
+        <item>@string/time_format_24h</item>
+    </string-array>
+    <string-array name="time_format_values">
+        <item>SYSTEM_DEFAULT</item>
+        <item>HOUR_12</item>
+        <item>HOUR_24</item>
+    </string-array>
+</resources>

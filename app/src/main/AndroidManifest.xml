@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:name=".WorldClockPlugin"
+        android:allowBackup="true"
+        android:icon="@drawable/ic_world_clock"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.WorldClock">
+
+        <activity
+            android:name=".ui.ConfigurationActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="singleInstance" />
+
+        <activity
+            android:name=".ui.TimezonePickerActivity"
+            android:exported="false" />
+
+        <provider
+            android:name=".complications.WorldClockComplication"
+            android:authorities="${applicationId}.complication.worldclock"
+            android:exported="true"
+            android:permission="com.kieronquinn.app.smartspacer.permission.ACCESS_SMARTSPACER_COMPLICATIONS">
+            <intent-filter>
+                <action android:name="com.kieronquinn.app.smartspacer.COMPLICATION" />
+            </intent-filter>
+        </provider>
+
+        <provider
+            android:name=".broadcasts.WorldClockBroadcastProvider"
+            android:authorities="${applicationId}.broadcasts.worldclock"
+            android:exported="true"
+            android:permission="com.kieronquinn.app.smartspacer.permission.ACCESS_SMARTSPACER_BROADCASTS">
+            <intent-filter>
+                <action android:name="com.kieronquinn.app.smartspacer.BROADCAST" />
+            </intent-filter>
+        </provider>
+
+    </application>
+</manifest>
