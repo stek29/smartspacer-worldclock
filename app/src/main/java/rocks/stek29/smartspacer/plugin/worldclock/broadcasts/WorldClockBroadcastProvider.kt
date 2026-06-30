@@ -2,6 +2,7 @@ package rocks.stek29.smartspacer.plugin.worldclock.broadcasts
 
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.Uri
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.google.gson.Gson
@@ -27,6 +28,7 @@ class WorldClockBroadcastProvider : SmartspacerBroadcastProvider() {
         if (intent.action == Intent.ACTION_TIMEZONE_CHANGED) {
             WorldClockConfigRepository.invalidateAll()
         }
+        notifyBroadcastConfigChanged()
         SmartspacerComplicationProvider.notifyChange(
             provideContext(),
             WorldClockComplication::class.java
@@ -46,5 +48,13 @@ class WorldClockBroadcastProvider : SmartspacerBroadcastProvider() {
             addAction(Intent.ACTION_TIMEZONE_CHANGED)
             addAction(Intent.ACTION_DATE_CHANGED)
         }))
+    }
+
+    private fun notifyBroadcastConfigChanged() {
+        val uri = Uri.Builder()
+            .scheme("content")
+            .authority(AUTHORITY)
+            .build()
+        provideContext().contentResolver.notifyChange(uri, null)
     }
 }
