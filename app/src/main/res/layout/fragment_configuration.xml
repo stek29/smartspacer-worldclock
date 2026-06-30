@@ -109,12 +109,6 @@
             app:singleSelection="true">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/icon_world_clock"
-                style="@style/Widget.WorldClock.IconButton"
-                android:contentDescription="@string/icon_style_world_clock"
-                app:icon="@drawable/ic_world_clock" />
-
-            <com.google.android.material.button.MaterialButton
                 android:id="@+id/icon_home"
                 style="@style/Widget.WorldClock.IconButton"
                 android:contentDescription="@string/icon_style_home"
@@ -143,6 +137,12 @@
                 style="@style/Widget.WorldClock.IconButton"
                 android:contentDescription="@string/icon_style_globe"
                 app:icon="@drawable/ic_globe_24" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/icon_world_clock"
+                style="@style/Widget.WorldClock.IconButton"
+                android:contentDescription="@string/icon_style_world_clock"
+                app:icon="@drawable/ic_world_clock" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <TextView
