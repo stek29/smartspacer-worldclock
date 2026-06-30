@@ -19,6 +19,7 @@ import rocks.stek29.smartspacer.plugin.worldclock.R
 import rocks.stek29.smartspacer.plugin.worldclock.broadcasts.WorldClockBroadcastProvider
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockComplicationData
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockConfigRepository
+import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockIconStyle
 import rocks.stek29.smartspacer.plugin.worldclock.ui.ConfigurationActivity
 import rocks.stek29.smartspacer.plugin.worldclock.utils.TimeFormatter
 
@@ -32,12 +33,13 @@ class WorldClockComplication : SmartspacerComplicationProvider() {
         if (!TimeFormatter.isVisible(data)) return emptyList()
         val context = provideContext()
         val content = TimeFormatter.buildContent(context, data)
+        val icon = WorldClockIconStyle.drawableFor(data.iconStyle)
         return listOf(
             ComplicationTemplate.Basic(
                 id = "worldclock_$smartspacerId",
                 icon = Icon(
-                    AndroidIcon.createWithResource(context, R.drawable.ic_world_clock),
-                    context.getString(R.string.complication_world_clock_label)
+                    AndroidIcon.createWithResource(context, icon),
+                    WorldClockIconStyle.labelFor(context, data.iconStyle)
                 ),
                 content = Text(content),
                 onClick = TapAction(intent = Intent(AlarmClock.ACTION_SHOW_ALARMS))
@@ -48,6 +50,7 @@ class WorldClockComplication : SmartspacerComplicationProvider() {
     override fun getConfig(smartspacerId: String?): Config {
         val context = provideContext()
         val data = smartspacerId?.let { getStoredConfig(it) }
+        val icon = data?.let { WorldClockIconStyle.drawableFor(it.iconStyle) } ?: R.drawable.ic_world_clock
         return Config(
             label = when {
                 data?.mode == WorldClockComplicationData.Mode.HOME -> {
@@ -63,7 +66,7 @@ class WorldClockComplication : SmartspacerComplicationProvider() {
                 data != null -> context.getString(R.string.settings_description_zone, data.timezoneId)
                 else -> context.getString(R.string.complication_world_clock_description)
             },
-            icon = AndroidIcon.createWithResource(context, R.drawable.ic_world_clock),
+            icon = AndroidIcon.createWithResource(context, icon),
             allowAddingMoreThanOnce = true,
             configActivity = Intent(context, ConfigurationActivity::class.java),
             setupActivity = Intent(context, ConfigurationActivity::class.java),

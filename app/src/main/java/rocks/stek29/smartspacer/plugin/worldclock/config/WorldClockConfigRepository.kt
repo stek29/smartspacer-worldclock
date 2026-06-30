@@ -21,7 +21,7 @@ object WorldClockConfigRepository {
             .map { preferences ->
                 preferences[key]?.let { runCatching {
                     gson.fromJson(it, WorldClockComplicationData::class.java)
-                }.getOrNull() }
+                }.getOrNull()?.normalized() }
             }
             .catch { emit(null) }
     }
@@ -44,4 +44,12 @@ object WorldClockConfigRepository {
     }
 
     private fun keyFor(smartspacerId: String) = stringPreferencesKey("worldclock/$smartspacerId")
+
+    private fun WorldClockComplicationData.normalized(): WorldClockComplicationData {
+        val safeIconStyle = runCatching {
+            WorldClockComplicationData.IconStyle.valueOf(iconStyle.name)
+        }.getOrNull()
+            ?: WorldClockComplicationData.IconStyle.WORLD_CLOCK
+        return copy(iconStyle = safeIconStyle)
+    }
 }

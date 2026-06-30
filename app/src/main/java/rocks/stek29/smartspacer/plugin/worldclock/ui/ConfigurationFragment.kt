@@ -8,6 +8,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
@@ -29,6 +30,7 @@ import rocks.stek29.smartspacer.plugin.worldclock.R
 import rocks.stek29.smartspacer.plugin.worldclock.complications.WorldClockComplication
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockComplicationData
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockConfigRepository
+import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockIconStyle
 import rocks.stek29.smartspacer.plugin.worldclock.utils.TimeFormatter
 import java.time.Clock
 import java.time.ZoneId
@@ -43,8 +45,10 @@ class ConfigurationFragment : Fragment() {
 
     private var bindingConfig = false
 
+    private lateinit var previewIcon: ImageView
     private lateinit var previewTime: TextView
     private lateinit var previewLabel: TextView
+    private lateinit var iconGroup: MaterialButtonToggleGroup
     private lateinit var modeGroup: MaterialButtonToggleGroup
     private lateinit var timezoneCard: MaterialCardView
     private lateinit var timezoneTitle: TextView
@@ -81,8 +85,10 @@ class ConfigurationFragment : Fragment() {
     }
 
     private fun bindViews(view: View) {
+        previewIcon = view.findViewById(R.id.preview_icon)
         previewTime = view.findViewById(R.id.preview_time)
         previewLabel = view.findViewById(R.id.preview_label)
+        iconGroup = view.findViewById(R.id.icon_group)
         modeGroup = view.findViewById(R.id.mode_group)
         timezoneCard = view.findViewById(R.id.timezone_card)
         timezoneTitle = view.findViewById(R.id.timezone_title)
@@ -109,6 +115,18 @@ class ConfigurationFragment : Fragment() {
     }
 
     private fun bindActions() {
+        iconGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (bindingConfig || !isChecked) return@addOnButtonCheckedListener
+            val iconStyle = when (checkedId) {
+                R.id.icon_home -> WorldClockComplicationData.IconStyle.HOME
+                R.id.icon_heart -> WorldClockComplicationData.IconStyle.HEART
+                R.id.icon_work -> WorldClockComplicationData.IconStyle.WORK
+                R.id.icon_travel -> WorldClockComplicationData.IconStyle.TRAVEL
+                R.id.icon_globe -> WorldClockComplicationData.IconStyle.GLOBE
+                else -> WorldClockComplicationData.IconStyle.WORLD_CLOCK
+            }
+            updateConfig { copy(iconStyle = iconStyle) }
+        }
         modeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (bindingConfig || !isChecked) return@addOnButtonCheckedListener
             val mode = when (checkedId) {
@@ -145,6 +163,16 @@ class ConfigurationFragment : Fragment() {
 
     private fun bindConfig(data: WorldClockComplicationData) {
         bindingConfig = true
+        iconGroup.check(
+            when (data.iconStyle) {
+                WorldClockComplicationData.IconStyle.WORLD_CLOCK -> R.id.icon_world_clock
+                WorldClockComplicationData.IconStyle.HOME -> R.id.icon_home
+                WorldClockComplicationData.IconStyle.HEART -> R.id.icon_heart
+                WorldClockComplicationData.IconStyle.WORK -> R.id.icon_work
+                WorldClockComplicationData.IconStyle.TRAVEL -> R.id.icon_travel
+                WorldClockComplicationData.IconStyle.GLOBE -> R.id.icon_globe
+            }
+        )
         modeGroup.check(
             when (data.mode) {
                 WorldClockComplicationData.Mode.NORMAL -> R.id.mode_normal
@@ -181,6 +209,7 @@ class ConfigurationFragment : Fragment() {
     }
 
     private fun bindPreview(data: WorldClockComplicationData) {
+        previewIcon.setImageResource(WorldClockIconStyle.drawableFor(data.iconStyle))
         previewTime.text = TimeFormatter.formatTime(
             requireContext(),
             ZoneId.of(data.timezoneId),

@@ -13,7 +13,9 @@ data class WorldClockComplicationData(
     @SerializedName("custom_label")
     val customLabel: String = "",
     @SerializedName("show_offset_label")
-    val showOffsetLabel: Boolean = false
+    val showOffsetLabel: Boolean = false,
+    @SerializedName("icon_style")
+    val iconStyle: IconStyle = IconStyle.WORLD_CLOCK
 ) {
     enum class Mode {
         NORMAL,
@@ -24,5 +26,14 @@ data class WorldClockComplicationData(
         SYSTEM_DEFAULT,
         HOUR_12,
         HOUR_24
+    }
+
+    enum class IconStyle {
+        WORLD_CLOCK,
+        HOME,
+        HEART,
+        WORK,
+        TRAVEL,
+        GLOBE
     }
 }

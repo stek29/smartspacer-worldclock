@@ -27,4 +27,11 @@
     <string name="show_offset_label_summary">Ignored when a custom label is set</string>
     <string name="timezone_search_hint">Search timezones</string>
     <string name="timezone_picker_title">Timezone</string>
+    <string name="icon_style_title">Icon</string>
+    <string name="icon_style_world_clock">Clock</string>
+    <string name="icon_style_home">Home</string>
+    <string name="icon_style_heart">Heart</string>
+    <string name="icon_style_work">Work</string>
+    <string name="icon_style_travel">Travel</string>
+    <string name="icon_style_globe">Globe</string>
 </resources>
