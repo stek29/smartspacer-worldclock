@@ -2,8 +2,10 @@ package rocks.stek29.smartspacer.plugin.worldclock.ui
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.google.gson.Gson
@@ -25,6 +27,7 @@ class ConfigurationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        configureWindow()
         setContentView(R.layout.activity_configuration)
         val id = smartspacerId
         if (id == null) {
@@ -36,6 +39,13 @@ class ConfigurationActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             showFragment(id)
         }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun configureWindow() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
     }
 
     override fun onNewIntent(intent: Intent) {

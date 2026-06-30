@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="configuration_background_start">#F8F2FF</color>
+    <color name="configuration_background_end">#ECF7F2</color>
+    <color name="glass_surface">#99FFFFFF</color>
+    <color name="glass_surface_strong">#CCFFFFFF</color>
+    <color name="glass_stroke">#66FFFFFF</color>
+</resources>
