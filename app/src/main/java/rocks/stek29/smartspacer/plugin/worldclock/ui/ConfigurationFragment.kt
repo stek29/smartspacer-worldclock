@@ -72,7 +72,7 @@ class ConfigurationFragment : PreferenceFragmentCompat() {
             true
         }
 
-        viewLifecycleOwner.lifecycleScope.launch {
+        lifecycleScope.launch {
             loadConfig()?.let { data ->
                 mode.value = data.mode.name
                 timezone.summary = data.timezoneId
@@ -85,7 +85,7 @@ class ConfigurationFragment : PreferenceFragmentCompat() {
     }
 
     private fun updateConfig(transform: WorldClockComplicationData.() -> WorldClockComplicationData) {
-        viewLifecycleOwner.lifecycleScope.launch {
+        lifecycleScope.launch {
             val updated = (loadConfig() ?: WorldClockComplicationData()).transform()
             WorldClockConfigRepository.putConfig(dataStore, gson, smartspacerId, updated)
             findPreference<Preference>(KEY_TIMEZONE)?.summary = updated.timezoneId
