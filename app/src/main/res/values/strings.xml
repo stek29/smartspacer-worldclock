@@ -11,6 +11,7 @@
     <string name="mode_normal">Normal</string>
     <string name="mode_home">Home</string>
     <string name="timezone_title">Timezone</string>
+    <string name="timezone_display_format">%1$s (%2$s)</string>
     <string name="time_format_title">Time format</string>
     <string name="time_format_system">System default</string>
     <string name="time_format_12h">12-hour</string>

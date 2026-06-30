@@ -1,6 +1,7 @@
 package rocks.stek29.smartspacer.plugin.worldclock.ui
 
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.datastore.core.DataStore
@@ -33,10 +34,17 @@ class ConfigurationActivity : AppCompatActivity() {
         ensureDefaultConfig(id)
         setResult(Activity.RESULT_OK)
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, ConfigurationFragment.newInstance(id))
-                .commit()
+            showFragment(id)
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val id = smartspacerId ?: return finish()
+        ensureDefaultConfig(id)
+        setResult(Activity.RESULT_OK)
+        showFragment(id)
     }
 
     private fun ensureDefaultConfig(smartspacerId: String) {
@@ -51,5 +59,11 @@ class ConfigurationActivity : AppCompatActivity() {
                 )
             }
         }
+    }
+
+    private fun showFragment(smartspacerId: String) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, ConfigurationFragment.newInstance(smartspacerId))
+            .commit()
     }
 }

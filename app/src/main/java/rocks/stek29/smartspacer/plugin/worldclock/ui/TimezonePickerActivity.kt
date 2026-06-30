@@ -30,7 +30,11 @@ class TimezonePickerActivity : AppCompatActivity() {
                 val zone = ZoneId.of(zoneId)
                 TimezoneRow(
                     id = zoneId,
-                    title = "${zone.getDisplayName(TextStyle.FULL, Locale.getDefault())} ($zoneId)"
+                    title = getString(
+                        R.string.timezone_display_format,
+                        zone.getDisplayName(TextStyle.FULL, Locale.getDefault()),
+                        zoneId
+                    )
                 )
             }
             .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.title })
