@@ -75,24 +75,6 @@ export ANDROID_KEY_PASSWORD=...
 ./gradlew assembleRelease
 ```
 
-## Manual Testing
-
-Install the debug APK on a device with SmartSpacer:
-
-```bash
-adb install app/build/outputs/apk/debug/app-debug.apk
-```
-
-Then add the complication from SmartSpacer and verify:
-
-- Default setup uses Home mode and the device timezone.
-- Home mode hides when device and configured timezone offsets match.
-- Home mode shows when offsets differ.
-- Normal mode always shows.
-- Multiple instances keep separate settings.
-- Time format and label settings update the complication.
-- Tap opens the clock/alarms app.
-
 ## Localisation
 
 User-facing strings live in `app/src/main/res/values/strings.xml`. Future translations can be added with Android resource directories such as:
