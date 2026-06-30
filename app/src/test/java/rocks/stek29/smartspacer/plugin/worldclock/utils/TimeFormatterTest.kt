@@ -34,7 +34,7 @@ class TimeFormatterTest {
     fun labelIsTruncatedBeforeTime() {
         val content = TimeFormatter.truncateContent("09:30", "TokyoStation")
 
-        assertEquals("09:30·TokyoS", content)
+        assertEquals("09:30 TokyoS", content)
         assertTrue(content.length <= TimeFormatter.MAX_CONTENT_LENGTH)
     }
 
@@ -54,7 +54,7 @@ class TimeFormatterTest {
 
         val content = TimeFormatter.truncateContent("21:00", data.customLabel)
 
-        assertEquals("21:00·Tokyo", content)
+        assertEquals("21:00 Tokyo", content)
     }
 
     @Test

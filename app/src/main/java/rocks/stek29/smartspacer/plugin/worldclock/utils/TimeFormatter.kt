@@ -14,7 +14,7 @@ import java.util.TimeZone
 object TimeFormatter {
 
     const val MAX_CONTENT_LENGTH = 12
-    private const val SEPARATOR = "·"
+    private const val SEPARATOR = " "
 
     fun isVisible(data: WorldClockComplicationData, clock: Clock = Clock.systemUTC()): Boolean {
         return when (data.mode) {
