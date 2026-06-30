@@ -1,6 +1,6 @@
 # SmartSpacer World Clock
 
-SmartSpacer World Clock is a standalone SmartSpacer plugin that provides a text-based complication showing the current time in a configured timezone.
+SmartSpacer World Clock is a standalone SmartSpacer plugin that provides a text-based complication showing the current time in a configured timezone. It also provides a SmartSpacer Requirement for showing any target or complication only when a selected timezone has a different current GMT offset from the device.
 
 Each complication instance has independent settings for timezone, mode, time format, and label.
 
@@ -14,12 +14,19 @@ Each complication instance has independent settings for timezone, mode, time for
 - Optional custom label or dynamic GMT offset label.
 - Minute-level updates via SmartSpacer broadcast provider while the complication is visible.
 - Tap action opens the system clock/alarms app.
+- Timezone Offset Requirement: can be attached to SmartSpacer targets or complications to require that a selected timezone's current GMT offset differs from the device's current GMT offset.
+
+## Requirement provider
+
+The Timezone Offset Requirement is configured separately from the World Clock complication. Its setup screen contains a status preview and a timezone selector, reusing the same timezone picker as the complication configuration.
+
+The requirement is met when the selected timezone and the device timezone currently have different GMT offsets. To require matching offsets instead, use SmartSpacer's built-in invert option on the requirement.
 
 ## Battery behaviour
 
 Home mode avoids registering per-minute `ACTION_TIME_TICK` updates while the complication is hidden because the device's current UTC offset matches the configured home timezone. It still listens for time, timezone, and date changes so SmartSpacer can re-check whether the complication should become visible.
 
-This intentionally trades a small amount of DST-transition precision for lower idle wakeups: if two zones have the same offset and later diverge only because of a daylight-saving transition, the hidden complication may not become visible until the next date/time/timezone broadcast rather than exactly at the transition minute.
+This intentionally trades a small amount of DST-transition precision for lower idle wakeups: if two zones have the same offset and later diverge only because of a daylight-saving transition, the hidden complication or timezone-offset requirement may not update until the next date/time/timezone broadcast rather than exactly at the transition minute.
 
 ## Requirements
 

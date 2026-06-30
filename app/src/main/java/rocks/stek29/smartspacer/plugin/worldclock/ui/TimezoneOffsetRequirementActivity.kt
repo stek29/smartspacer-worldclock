@@ -1,0 +1,84 @@
+package rocks.stek29.smartspacer.plugin.worldclock.ui
+
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Color
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import com.google.gson.Gson
+import com.kieronquinn.app.smartspacer.sdk.SmartspacerConstants
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import org.koin.android.ext.android.inject
+import rocks.stek29.smartspacer.plugin.worldclock.R
+import rocks.stek29.smartspacer.plugin.worldclock.config.TimezoneOffsetRequirementData
+import rocks.stek29.smartspacer.plugin.worldclock.config.TimezoneOffsetRequirementRepository
+
+class TimezoneOffsetRequirementActivity : AppCompatActivity() {
+
+    private val dataStore by inject<DataStore<Preferences>>()
+    private val gson by inject<Gson>()
+
+    private val smartspacerId: String?
+        get() = intent.getStringExtra(SmartspacerConstants.EXTRA_SMARTSPACER_ID)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        configureWindow()
+        setContentView(R.layout.activity_configuration)
+        val id = smartspacerId
+        if (id == null) {
+            finish()
+            return
+        }
+        ensureDefaultConfig(id)
+        setResult(Activity.RESULT_OK)
+        if (savedInstanceState == null) {
+            showFragment(id)
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun configureWindow() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val id = smartspacerId ?: return finish()
+        ensureDefaultConfig(id)
+        setResult(Activity.RESULT_OK)
+        showFragment(id)
+    }
+
+    private fun ensureDefaultConfig(smartspacerId: String) {
+        runBlocking {
+            val existing = TimezoneOffsetRequirementRepository
+                .getConfig(dataStore, gson, smartspacerId)
+                .first()
+            if (existing == null) {
+                TimezoneOffsetRequirementRepository.putConfig(
+                    dataStore = dataStore,
+                    gson = gson,
+                    smartspacerId = smartspacerId,
+                    data = TimezoneOffsetRequirementData()
+                )
+            }
+        }
+    }
+
+    private fun showFragment(smartspacerId: String) {
+        supportFragmentManager.beginTransaction()
+            .replace(
+                R.id.fragment_container,
+                TimezoneOffsetRequirementFragment.newInstance(smartspacerId)
+            )
+            .commit()
+    }
+}

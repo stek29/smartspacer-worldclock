@@ -24,6 +24,28 @@ class TimeFormatterTest {
     }
 
     @Test
+    fun timezoneOffsetRequirementPredicateIsMetOnlyForDifferentOffsets() {
+        val clock = fixedClock("2026-06-30T12:00:00Z")
+
+        assertEquals(
+            true,
+            TimeFormatter.hasDifferentOffset(
+                ZoneId.of("Asia/Tokyo"),
+                ZoneId.of("Europe/Moscow"),
+                clock
+            )
+        )
+        assertEquals(
+            false,
+            TimeFormatter.hasDifferentOffset(
+                ZoneId.of("Europe/Istanbul"),
+                ZoneId.of("Europe/Moscow"),
+                clock
+            )
+        )
+    }
+
+    @Test
     fun normalModeAlwaysVisible() {
         val data = WorldClockComplicationData(mode = WorldClockComplicationData.Mode.NORMAL)
 

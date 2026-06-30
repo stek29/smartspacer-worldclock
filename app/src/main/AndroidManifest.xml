@@ -17,6 +17,12 @@
             android:launchMode="singleInstance" />
 
         <activity
+            android:name=".ui.TimezoneOffsetRequirementActivity"
+            android:excludeFromRecents="true"
+            android:exported="true"
+            android:launchMode="singleInstance" />
+
+        <activity
             android:name=".ui.TimezonePickerActivity"
             android:exported="false" />
 
@@ -39,6 +45,26 @@
                 <action android:name="com.kieronquinn.app.smartspacer.BROADCAST" />
             </intent-filter>
         </provider>
+
+        <provider
+            android:name=".requirements.TimezoneOffsetRequirement"
+            android:authorities="${applicationId}.requirement.timezoneoffset"
+            android:exported="true"
+            android:permission="com.kieronquinn.app.smartspacer.permission.ACCESS_SMARTSPACER_REQUIREMENTS">
+            <intent-filter>
+                <action android:name="com.kieronquinn.app.smartspacer.REQUIREMENT" />
+            </intent-filter>
+        </provider>
+
+        <receiver
+            android:name=".broadcasts.TimezoneOffsetRequirementChangeReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.DATE_CHANGED" />
+            </intent-filter>
+        </receiver>
 
     </application>
 </manifest>
