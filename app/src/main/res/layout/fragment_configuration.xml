@@ -104,7 +104,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            app:checkedButton="@id/icon_world_clock"
+            app:checkedButton="@id/icon_home"
             app:selectionRequired="true"
             app:singleSelection="true">
 

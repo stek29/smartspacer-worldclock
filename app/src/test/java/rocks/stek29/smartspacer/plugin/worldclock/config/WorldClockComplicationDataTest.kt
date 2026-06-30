@@ -17,6 +17,7 @@ class WorldClockComplicationDataTest {
         assertEquals(WorldClockComplicationData.TimeFormat.SYSTEM_DEFAULT, data.timeFormat)
         assertEquals("", data.customLabel)
         assertEquals(false, data.showOffsetLabel)
+        assertEquals(WorldClockComplicationData.IconStyle.HOME, data.iconStyle)
     }
 
     @Test
