@@ -12,7 +12,6 @@ import com.kieronquinn.app.smartspacer.sdk.model.uitemplatedata.TapAction
 import com.kieronquinn.app.smartspacer.sdk.model.uitemplatedata.Text
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerComplicationProvider
 import com.kieronquinn.app.smartspacer.sdk.utils.ComplicationTemplate
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.koin.android.ext.android.inject
 import rocks.stek29.smartspacer.plugin.worldclock.R
@@ -82,7 +81,7 @@ class WorldClockComplication : SmartspacerComplicationProvider() {
 
     private fun getStoredConfig(smartspacerId: String): WorldClockComplicationData? {
         return runBlocking {
-            WorldClockConfigRepository.getConfig(dataStore, gson, smartspacerId).first()
+            WorldClockConfigRepository.getConfigOnce(dataStore, gson, smartspacerId)
         }
     }
 }

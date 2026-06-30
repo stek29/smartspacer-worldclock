@@ -5,6 +5,7 @@ import android.text.format.DateFormat
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockComplicationData
 import java.text.SimpleDateFormat
 import java.time.Clock
+import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Date
@@ -18,18 +19,22 @@ object TimeFormatter {
     private const val SEPARATOR = " "
 
     fun isVisible(data: WorldClockComplicationData, clock: Clock = Clock.systemUTC()): Boolean {
+        val instant = clock.instant()
         return when (data.mode) {
             WorldClockComplicationData.Mode.NORMAL -> true
             WorldClockComplicationData.Mode.HOME -> hasDifferentOffset(
                 homeZone = ZoneId.of(data.timezoneId),
                 deviceZone = ZoneId.systemDefault(),
-                clock = clock
+                instant = instant
             )
         }
     }
 
     fun hasDifferentOffset(homeZone: ZoneId, deviceZone: ZoneId, clock: Clock): Boolean {
-        val instant = clock.instant()
+        return hasDifferentOffset(homeZone, deviceZone, clock.instant())
+    }
+
+    private fun hasDifferentOffset(homeZone: ZoneId, deviceZone: ZoneId, instant: Instant): Boolean {
         return homeZone.rules.getOffset(instant) != deviceZone.rules.getOffset(instant)
     }
 
@@ -39,12 +44,19 @@ object TimeFormatter {
         clock: Clock = Clock.systemUTC(),
         locale: Locale = Locale.getDefault()
     ): String {
+        val instant = clock.instant()
         val zone = ZoneId.of(data.timezoneId)
-        val time = formatTime(context, zone, data.timeFormat, clock)
-            .let { if (it.length <= MAX_CONTENT_LENGTH) it else formatCompactTime(zone, clock, locale) }
+        val time = formatTime(context, zone, data.timeFormat, instant)
+            .let {
+                if (it.length <= MAX_CONTENT_LENGTH) {
+                    it
+                } else {
+                    formatCompactTime(zone, instant, locale)
+                }
+            }
         return when {
             data.customLabel.isNotBlank() -> truncateContent(time, data.customLabel.trim())
-            data.showOffsetLabel -> truncateOffsetContent(time, zone, clock, locale)
+            data.showOffsetLabel -> truncateOffsetContent(time, zone, instant, locale)
             else -> time
         }
     }
@@ -55,13 +67,22 @@ object TimeFormatter {
         format: WorldClockComplicationData.TimeFormat,
         clock: Clock = Clock.systemUTC()
     ): String {
+        return formatTime(context, zone, format, clock.instant())
+    }
+
+    private fun formatTime(
+        context: Context,
+        zone: ZoneId,
+        format: WorldClockComplicationData.TimeFormat,
+        instant: Instant
+    ): String {
         val dateFormat = when (format) {
             WorldClockComplicationData.TimeFormat.SYSTEM_DEFAULT -> DateFormat.getTimeFormat(context)
             WorldClockComplicationData.TimeFormat.HOUR_12 -> SimpleDateFormat("h:mm a", Locale.getDefault())
             WorldClockComplicationData.TimeFormat.HOUR_24 -> SimpleDateFormat("HH:mm", Locale.getDefault())
         }
         dateFormat.timeZone = TimeZone.getTimeZone(zone)
-        return dateFormat.format(Date.from(clock.instant()))
+        return dateFormat.format(Date.from(instant))
     }
 
     fun formatTime(
@@ -81,13 +102,26 @@ object TimeFormatter {
     }
 
     fun formatOffset(zone: ZoneId, clock: Clock, locale: Locale): String {
+        return formatOffset(zone, clock.instant(), locale)
+    }
+
+    private fun formatOffset(zone: ZoneId, instant: Instant, locale: Locale): String {
         return DateTimeFormatter.ofPattern("O", locale)
             .withZone(zone)
-            .format(clock.instant())
+            .format(instant)
     }
 
     fun truncateOffsetContent(time: String, zone: ZoneId, clock: Clock, locale: Locale): String {
-        val labels = listOf(formatOffset(zone, clock, locale)) + formatCompactOffsets(zone, clock)
+        return truncateOffsetContent(time, zone, clock.instant(), locale)
+    }
+
+    private fun truncateOffsetContent(
+        time: String,
+        zone: ZoneId,
+        instant: Instant,
+        locale: Locale
+    ): String {
+        val labels = listOf(formatOffset(zone, instant, locale)) + formatCompactOffsets(zone, instant)
         return labels
             .distinct()
             .firstNotNullOfOrNull { label -> contentIfFits(time, label) }
@@ -107,8 +141,8 @@ object TimeFormatter {
         return content.takeIf { it.length <= MAX_CONTENT_LENGTH }
     }
 
-    private fun formatCompactOffsets(zone: ZoneId, clock: Clock): List<String> {
-        val totalSeconds = zone.rules.getOffset(clock.instant()).totalSeconds
+    private fun formatCompactOffsets(zone: ZoneId, instant: Instant): List<String> {
+        val totalSeconds = zone.rules.getOffset(instant).totalSeconds
         val sign = if (totalSeconds >= 0) "+" else "-"
         val totalMinutes = abs(totalSeconds) / 60
         val hours = totalMinutes / 60
@@ -122,9 +156,9 @@ object TimeFormatter {
         return listOfNotNull(colonOffset, decimalOffset)
     }
 
-    private fun formatCompactTime(zone: ZoneId, clock: Clock, locale: Locale): String {
+    private fun formatCompactTime(zone: ZoneId, instant: Instant, locale: Locale): String {
         return DateTimeFormatter.ofPattern("HH:mm", locale)
             .withZone(zone)
-            .format(clock.instant())
+            .format(instant)
     }
 }

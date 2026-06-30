@@ -6,6 +6,7 @@ import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerBroadcastProvider
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerComplicationProvider
 import rocks.stek29.smartspacer.plugin.worldclock.BuildConfig
 import rocks.stek29.smartspacer.plugin.worldclock.complications.WorldClockComplication
+import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockConfigRepository
 
 class WorldClockBroadcastProvider : SmartspacerBroadcastProvider() {
 
@@ -14,6 +15,9 @@ class WorldClockBroadcastProvider : SmartspacerBroadcastProvider() {
     }
 
     override fun onReceive(intent: Intent) {
+        if (intent.action == Intent.ACTION_TIMEZONE_CHANGED) {
+            WorldClockConfigRepository.invalidateAll()
+        }
         SmartspacerComplicationProvider.notifyChange(
             provideContext(),
             WorldClockComplication::class.java

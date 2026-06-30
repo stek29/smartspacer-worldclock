@@ -247,6 +247,7 @@ class ConfigurationFragment : Fragment() {
             val updated = (loadConfig() ?: WorldClockComplicationData()).transform()
             WorldClockConfigRepository.putConfig(dataStore, gson, smartspacerId, updated)
             bindConfig(updated)
+            WorldClockConfigRepository.invalidateConfig(smartspacerId)
             SmartspacerComplicationProvider.notifyChange(
                 requireContext(),
                 WorldClockComplication::class.java,
