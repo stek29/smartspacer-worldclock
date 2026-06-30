@@ -103,3 +103,9 @@ app/src/main/res/values-fr/strings.xml
 ```
 
 Technical identifiers, JSON keys, DataStore keys, and time format patterns are intentionally not localised.
+
+## License
+
+Original project code is licensed under the Zero-Clause BSD license. See `LICENSE`.
+
+Third-party tooling, dependencies, and icon assets keep their own licenses. See `THIRD_PARTY_NOTICES.md`.
