@@ -37,7 +37,10 @@
     <string name="hide_subtitle_on_aod_title">Hide subtitle on AOD</string>
     <string name="hide_subtitle_on_aod_summary">Only supported by some Smartspace implementations; unsupported surfaces may still show the subtitle.</string>
     <string name="timezone_search_hint">Search timezones</string>
+    <string name="timezone_search_close">Close timezone picker</string>
+    <string name="timezone_search_clear">Clear search</string>
     <string name="timezone_picker_title">Timezone</string>
+    <string name="timezone_no_results">No results</string>
     <string name="icon_style_title">Icon</string>
     <string name="icon_style_world_clock">Clock</string>
     <string name="icon_style_home">Home</string>

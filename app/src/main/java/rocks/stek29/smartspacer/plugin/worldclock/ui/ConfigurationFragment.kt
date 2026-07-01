@@ -2,15 +2,20 @@ package rocks.stek29.smartspacer.plugin.worldclock.ui
 
 import android.app.Activity
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.transition.AutoTransition
+import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.PopupMenu
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.TextView
+import android.widget.ImageView
+import android.widget.ScrollView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -20,9 +25,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
@@ -71,8 +78,8 @@ class ConfigurationFragment : Fragment() {
     private lateinit var timezoneTitle: TextView
     private lateinit var timezoneSubtitle: TextView
     private lateinit var timeFormatGroup: MaterialButtonToggleGroup
-    private lateinit var labelModeCard: MaterialCardView
-    private lateinit var labelModeValue: TextView
+    private lateinit var labelModeContainer: TextInputLayout
+    private lateinit var labelModeValue: AutoCompleteTextView
     private lateinit var customLabelContainer: TextInputLayout
     private lateinit var customLabel: TextInputEditText
     private lateinit var showLabelInSubtitleCard: MaterialCardView
@@ -120,7 +127,7 @@ class ConfigurationFragment : Fragment() {
         timezoneTitle = view.findViewById(R.id.timezone_title)
         timezoneSubtitle = view.findViewById(R.id.timezone_subtitle)
         timeFormatGroup = view.findViewById(R.id.time_format_group)
-        labelModeCard = view.findViewById(R.id.label_mode_card)
+        labelModeContainer = view.findViewById(R.id.label_mode_container)
         labelModeValue = view.findViewById(R.id.label_mode_value)
         customLabelContainer = view.findViewById(R.id.custom_label_container)
         customLabel = view.findViewById(R.id.custom_label)
@@ -132,16 +139,29 @@ class ConfigurationFragment : Fragment() {
     }
 
     private fun applyInsets(view: View) {
+        val scroll = view.findViewById<ScrollView>(R.id.configuration_scroll)
         val content = view.findViewById<View>(R.id.configuration_content)
         val baseTop = content.paddingTop
         val baseBottom = content.paddingBottom
+        val scrollBaseBottom = scroll.paddingBottom
         ViewCompat.setOnApplyWindowInsetsListener(content) { target, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             target.setPadding(
                 target.paddingLeft,
                 baseTop + systemBars.top,
                 target.paddingRight,
-                baseBottom + systemBars.bottom
+                baseBottom
+            )
+            insets
+        }
+        ViewCompat.setOnApplyWindowInsetsListener(scroll) { target, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            target.setPadding(
+                target.paddingLeft,
+                target.paddingTop,
+                target.paddingRight,
+                scrollBaseBottom + maxOf(systemBars.bottom, ime.bottom)
             )
             insets
         }
@@ -150,6 +170,7 @@ class ConfigurationFragment : Fragment() {
     private fun bindActions() {
         iconGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (bindingConfig || !isChecked) return@addOnButtonCheckedListener
+            updateSelectedIndicators(iconGroup)
             val iconStyle = when (checkedId) {
                 R.id.icon_home -> WorldClockComplicationData.IconStyle.HOME
                 R.id.icon_heart -> WorldClockComplicationData.IconStyle.HEART
@@ -162,6 +183,7 @@ class ConfigurationFragment : Fragment() {
         }
         modeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (bindingConfig || !isChecked) return@addOnButtonCheckedListener
+            updateSelectedIndicators(modeGroup)
             val mode = when (checkedId) {
                 R.id.mode_normal -> WorldClockComplicationData.Mode.NORMAL
                 else -> WorldClockComplicationData.Mode.HOME
@@ -169,10 +191,14 @@ class ConfigurationFragment : Fragment() {
             updateConfig { copy(mode = mode) }
         }
         timezoneCard.setOnClickListener {
-            timezonePicker.launch(Intent(requireContext(), TimezonePickerActivity::class.java))
+            val timezoneId = latestConfigState?.common?.timezoneId
+            val intent = Intent(requireContext(), TimezonePickerActivity::class.java)
+                .putExtra(TimezonePickerActivity.EXTRA_SELECTED_TIMEZONE_ID, timezoneId)
+            timezonePicker.launch(intent)
         }
         timeFormatGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (bindingConfig || !isChecked) return@addOnButtonCheckedListener
+            updateSelectedIndicators(timeFormatGroup)
             val format = when (checkedId) {
                 R.id.time_format_12h -> WorldClockComplicationData.TimeFormat.HOUR_12
                 R.id.time_format_24h -> WorldClockComplicationData.TimeFormat.HOUR_24
@@ -180,10 +206,17 @@ class ConfigurationFragment : Fragment() {
             }
             updateConfig { copy(timeFormat = format) }
         }
-        labelModeCard.setOnClickListener {
-            if (bindingConfig) return@setOnClickListener
-            showLabelModeMenu()
+        labelModeValue.setOnItemClickListener { _, _, position, _ ->
+            if (bindingConfig) return@setOnItemClickListener
+            updateLabelMode(availableLabelModes()[position])
         }
+        labelModeValue.setOnClickListener {
+            labelModeValue.showDropDown()
+        }
+        labelModeValue.setOnDismissListener {
+            labelModeContainer.endIconDrawable?.level = 0
+        }
+        labelModeContainer.setEndIconOnClickListener { labelModeValue.showDropDown() }
         customLabel.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
@@ -195,6 +228,11 @@ class ConfigurationFragment : Fragment() {
                 }
             }
         })
+        customLabel.setOnFocusChangeListener { focusedView, hasFocus ->
+            if (hasFocus) {
+                focusedView.postDelayed({ scrollFocusedFieldIntoView(focusedView) }, 250L)
+            }
+        }
         hideSubtitleOnAod.setOnCheckedChangeListener { _, checked ->
             if (bindingConfig) return@setOnCheckedChangeListener
             updateTargetConfig { copy(hideSubtitleOnAod = checked) }
@@ -209,6 +247,7 @@ class ConfigurationFragment : Fragment() {
         latestConfigState = state
         val data = state.common
         bindingConfig = true
+        bindLabelModeAdapter()
         iconGroup.check(
             when (data.iconStyle) {
                 WorldClockComplicationData.IconStyle.WORLD_CLOCK -> R.id.icon_world_clock
@@ -232,6 +271,9 @@ class ConfigurationFragment : Fragment() {
                 WorldClockComplicationData.TimeFormat.HOUR_24 -> R.id.time_format_24h
             }
         )
+        updateSelectedIndicators(iconGroup)
+        updateSelectedIndicators(modeGroup)
+        updateSelectedIndicators(timeFormatGroup)
         val labelMode = if (
             type == ConfigurationActivity.Type.COMPLICATION &&
             data.labelMode == WorldClockComplicationData.LabelMode.TIMEZONE_NAME
@@ -240,7 +282,9 @@ class ConfigurationFragment : Fragment() {
         } else {
             data.labelMode
         }
-        labelModeValue.text = labelModeLabel(labelMode)
+        labelModeValue.setText(labelModeLabel(labelMode), false)
+        val transition = AutoTransition().apply { duration = 220L }
+        (view as? ViewGroup)?.let { TransitionManager.beginDelayedTransition(it, transition) }
         if (customLabel.text?.toString() != data.customLabel) {
             customLabel.setText(data.customLabel)
         }
@@ -482,18 +526,43 @@ class ConfigurationFragment : Fragment() {
         }
     }
 
-    private fun showLabelModeMenu() {
-        PopupMenu(requireContext(), labelModeCard).apply {
-            availableLabelModes().forEachIndexed { index, labelMode ->
-                menu.add(0, labelMode.ordinal, index, labelModeLabel(labelMode))
+    private fun bindLabelModeAdapter() {
+        val labels = availableLabelModes().map(::labelModeLabel)
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_list_item_1,
+            labels
+        )
+        labelModeValue.setAdapter(adapter)
+    }
+
+    private fun updateSelectedIndicators(group: MaterialButtonToggleGroup) {
+        val checkedId = group.checkedButtonId
+        for (index in 0 until group.childCount) {
+            val button = group.getChildAt(index) as? MaterialButton ?: continue
+            if (button.id == checkedId) {
+                val iconTint = ColorStateList.valueOf(
+                    MaterialColors.getColor(button, com.google.android.material.R.attr.colorSecondary)
+                )
+                button.setSecondaryIconResource(R.drawable.ic_check_18)
+                button.secondaryIconTint = iconTint
+                button.secondaryIconGravity = MaterialButton.ICON_GRAVITY_TEXT_END
+            } else {
+                button.secondaryIcon = null
             }
-            setOnMenuItemClickListener { item ->
-                val labelMode = availableLabelModes().firstOrNull { it.ordinal == item.itemId }
-                    ?: return@setOnMenuItemClickListener false
-                updateLabelMode(labelMode)
-                true
-            }
-            show()
+        }
+    }
+
+    private fun scrollFocusedFieldIntoView(focusedView: View) {
+        val scroll = view?.findViewById<ScrollView>(R.id.configuration_scroll) ?: return
+        val scrollLocation = IntArray(2)
+        val focusedLocation = IntArray(2)
+        scroll.getLocationOnScreen(scrollLocation)
+        focusedView.getLocationOnScreen(focusedLocation)
+        val focusedBottom = focusedLocation[1] - scrollLocation[1] + focusedView.height
+        val visibleBottom = scroll.height - scroll.paddingBottom
+        if (focusedBottom > visibleBottom) {
+            scroll.smoothScrollBy(0, focusedBottom - visibleBottom + resources.getDimensionPixelSize(R.dimen.configuration_focus_extra_scroll))
         }
     }
 
