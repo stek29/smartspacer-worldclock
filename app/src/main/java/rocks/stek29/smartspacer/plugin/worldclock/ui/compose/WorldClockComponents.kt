@@ -3,6 +3,8 @@ package rocks.stek29.smartspacer.plugin.worldclock.ui.compose
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -18,7 +20,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
@@ -46,6 +47,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import rocks.stek29.smartspacer.plugin.worldclock.R
 
+val WorldClockHorizontalPadding = 20.dp
+
+val WorldClockControlSpacing = 10.dp
+
+val WorldClockSectionTopPadding = 18.dp
+
+val WorldClockCardShape
+    @Composable get() = MaterialTheme.shapes.extraLarge
+
+fun <T> worldClockSpring() = spring<T>(
+    dampingRatio = Spring.DampingRatioNoBouncy,
+    stiffness = Spring.StiffnessMediumLow
+)
+
 @Composable
 fun ConfigurationBackground(content: @Composable () -> Unit) {
     val gradient = Brush.verticalGradient(
@@ -72,7 +87,7 @@ fun ContainedCard(
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = WorldClockCardShape,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(1.dp)
         ),
@@ -158,7 +173,7 @@ fun <T> HorizontalIconSegmentedSelector(
                     onClick = { onSelected(option) },
                     shape = SegmentedButtonDefaults.itemShape(index, options.size),
                     modifier = Modifier.width(56.dp),
-                    icon = { SegmentedButtonDefaults.Icon(active = isSelected) }
+                    icon = {}
                 ) {
                     Icon(
                         painter = painterResource(iconRes(option)),
@@ -183,7 +198,7 @@ fun TimezoneSelectorCard(
         TextButton(
             onClick = onClick,
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp)
+            shape = WorldClockCardShape
         ) {
             ListItem(
                 headlineContent = {

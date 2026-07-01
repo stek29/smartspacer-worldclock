@@ -8,6 +8,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,18 +24,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -40,6 +48,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.onFocusEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -78,7 +87,12 @@ import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.SectionTitle
 import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.SegmentedSelector
 import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.SwitchCard
 import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.TimezoneSelectorCard
+import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.WorldClockCardShape
+import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.WorldClockControlSpacing
+import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.WorldClockHorizontalPadding
+import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.WorldClockSectionTopPadding
 import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.WorldClockTheme
+import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.worldClockSpring
 import rocks.stek29.smartspacer.plugin.worldclock.utils.TimeFormatter
 import java.time.Clock
 import java.time.ZoneId
@@ -333,8 +347,8 @@ private fun ConfigurationScreen(
     val availableLabelModes = availableLabelModes(type)
     ConfigurationBackground {
         LazyColumn(
-            modifier = Modifier.padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.padding(horizontal = WorldClockHorizontalPadding),
+            verticalArrangement = Arrangement.spacedBy(WorldClockControlSpacing),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 24.dp, bottom = 24.dp)
         ) {
             item {
@@ -345,10 +359,10 @@ private fun ConfigurationScreen(
                 )
             }
             item { WorldClockPreviewCard(state, type, tick) }
-            item { SectionTitle(stringResource(R.string.icon_style_title), Modifier.padding(top = 18.dp)) }
+            item { SectionTitle(stringResource(R.string.icon_style_title), Modifier.padding(top = WorldClockSectionTopPadding)) }
             item {
                 HorizontalIconSegmentedSelector(
-                    options = WorldClockComplicationData.IconStyle.entries,
+                    options = iconStyleOptions(),
                     selected = data.iconStyle,
                     iconRes = { WorldClockIconStyle.drawableFor(it) },
                     contentDescription = { iconStyleLabel(context, it) },
@@ -360,10 +374,10 @@ private fun ConfigurationScreen(
                     HelperText(stringResource(R.string.target_icon_note))
                 }
             }
-            item { SectionTitle(stringResource(R.string.mode_title), Modifier.padding(top = 18.dp)) }
+            item { SectionTitle(stringResource(R.string.mode_title), Modifier.padding(top = WorldClockSectionTopPadding)) }
             item {
                 SegmentedSelector(
-                    options = WorldClockComplicationData.Mode.entries,
+                    options = modeOptions(),
                     selected = data.mode,
                     label = { Text(modeLabel(it)) },
                     onSelected = { onStateChange(state.copy(common = data.copy(mode = it))) }
@@ -384,7 +398,7 @@ private fun ConfigurationScreen(
                     modifier = Modifier.padding(top = 10.dp)
                 )
             }
-            item { SectionTitle(stringResource(R.string.time_format_title), Modifier.padding(top = 18.dp)) }
+            item { SectionTitle(stringResource(R.string.time_format_title), Modifier.padding(top = WorldClockSectionTopPadding)) }
             item {
                 SegmentedSelector(
                     options = WorldClockComplicationData.TimeFormat.entries,
@@ -393,9 +407,23 @@ private fun ConfigurationScreen(
                     onSelected = { onStateChange(state.copy(common = data.copy(timeFormat = it))) }
                 )
             }
-            item { SectionTitle(stringResource(R.string.label_mode_title), Modifier.padding(top = 18.dp)) }
+            item { SectionTitle(stringResource(R.string.label_mode_title), Modifier.padding(top = WorldClockSectionTopPadding)) }
             item {
                 var expanded by remember { mutableStateOf(false) }
+                var menuVisible by remember { mutableStateOf(false) }
+                val caretRotation by animateFloatAsState(
+                    targetValue = if (expanded) 180f else 0f,
+                    animationSpec = worldClockSpring(),
+                    label = "labelDropdownCaret"
+                )
+                LaunchedEffect(expanded) {
+                    if (expanded) {
+                        menuVisible = true
+                    } else {
+                        delay(120)
+                        menuVisible = false
+                    }
+                }
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = { expanded = it }
@@ -405,28 +433,47 @@ private fun ConfigurationScreen(
                         onValueChange = {},
                         readOnly = true,
                         label = { Text(stringResource(R.string.label_mode_title)) },
-                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        trailingIcon = {
+                            Icon(
+                                Icons.Filled.ArrowDropDown,
+                                contentDescription = null,
+                                modifier = Modifier.rotate(caretRotation)
+                            )
+                        },
                         modifier = Modifier
                             .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable, true)
                             .fillMaxWidth(),
-                        colors = TextFieldDefaults.colors(
+                        shape = WorldClockCardShape,
+                        colors = OutlinedTextFieldDefaults.colors(
                             focusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
                             disabledContainerColor = MaterialTheme.colorScheme.surfaceContainer
                         )
                     )
                     ExposedDropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false }
+                        expanded = menuVisible,
+                        onDismissRequest = { expanded = false },
+                        shape = WorldClockCardShape,
+                        containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                        tonalElevation = 3.dp,
+                        shadowElevation = 3.dp
                     ) {
-                        availableLabelModes.forEach { mode ->
-                            DropdownMenuItem(
-                                text = { Text(labelModeLabel(mode)) },
-                                onClick = {
-                                    expanded = false
-                                    onStateChange(state.copy(common = data.withLabelMode(mode)))
+                        AnimatedVisibility(
+                            visible = expanded,
+                            enter = fadeIn(worldClockSpring()) + expandVertically(worldClockSpring()),
+                            exit = fadeOut(worldClockSpring()) + shrinkVertically(worldClockSpring())
+                        ) {
+                            Column {
+                                availableLabelModes.forEach { mode ->
+                                    DropdownMenuItem(
+                                        text = { Text(labelModeLabel(mode)) },
+                                        onClick = {
+                                            expanded = false
+                                            onStateChange(state.copy(common = data.withLabelMode(mode)))
+                                        }
+                                    )
                                 }
-                            )
+                            }
                         }
                     }
                 }
@@ -473,7 +520,8 @@ private fun ConfigurationScreen(
                                 if (it.isFocused) {
                                     scope.launch { bringIntoViewRequester.bringIntoView() }
                                 }
-                            }
+                            },
+                        shape = WorldClockCardShape
                     )
                 }
             }
@@ -533,9 +581,10 @@ private fun WorldClockPreviewCard(
     } else {
         null
     }
+    val previewColors = lightColorScheme()
     ContainedCard(modifier = Modifier.padding(top = 10.dp)) {
         Column(
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
+            modifier = Modifier.padding(horizontal = WorldClockHorizontalPadding, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
@@ -543,36 +592,46 @@ private fun WorldClockPreviewCard(
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Row(modifier = Modifier.fillMaxWidth()) {
-                PreviewAlpha(visible) {
-                    Icon(
-                        painter = painterResource(WorldClockIconStyle.drawableFor(data.iconStyle)),
-                        contentDescription = stringResource(R.string.icon_style_title),
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Column(
-                    modifier = Modifier
-                        .padding(start = 12.dp)
-                        .weight(1f)
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = WorldClockCardShape,
+                color = previewColors.surfaceContainerHigh,
+                contentColor = previewColors.onSurface
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
                 ) {
                     PreviewAlpha(visible) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.titleMedium,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                        Icon(
+                            painter = painterResource(WorldClockIconStyle.drawableFor(data.iconStyle)),
+                            contentDescription = stringResource(R.string.icon_style_title),
+                            modifier = Modifier.size(24.dp)
                         )
                     }
-                    if (subtitle != null) {
-                        Text(
-                            text = subtitle,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.alpha(if (visible) 1f else 0.72f)
-                        )
+                    Column(
+                        modifier = Modifier
+                            .padding(start = 12.dp)
+                            .weight(1f)
+                    ) {
+                        PreviewAlpha(visible) {
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = previewColors.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        if (subtitle != null) {
+                            Text(
+                                text = subtitle,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = previewColors.onSurfaceVariant,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.alpha(if (visible) 1f else 0.72f)
+                            )
+                        }
                     }
                 }
             }
@@ -651,4 +710,22 @@ private fun availableLabelModes(type: ConfigurationActivity.Type): List<WorldClo
             WorldClockComplicationData.LabelMode.CUSTOM
         )
     }
+}
+
+private fun modeOptions(): List<WorldClockComplicationData.Mode> {
+    return listOf(
+        WorldClockComplicationData.Mode.HOME,
+        WorldClockComplicationData.Mode.NORMAL
+    )
+}
+
+private fun iconStyleOptions(): List<WorldClockComplicationData.IconStyle> {
+    return listOf(
+        WorldClockComplicationData.IconStyle.HOME,
+        WorldClockComplicationData.IconStyle.HEART,
+        WorldClockComplicationData.IconStyle.WORK,
+        WorldClockComplicationData.IconStyle.TRAVEL,
+        WorldClockComplicationData.IconStyle.GLOBE,
+        WorldClockComplicationData.IconStyle.WORLD_CLOCK
+    )
 }

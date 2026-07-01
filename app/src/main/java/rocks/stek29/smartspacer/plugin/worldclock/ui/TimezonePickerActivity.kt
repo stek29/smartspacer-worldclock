@@ -5,12 +5,12 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -23,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +46,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import rocks.stek29.smartspacer.plugin.worldclock.R
 import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.TimezoneRow
+import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.WorldClockCardShape
+import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.WorldClockHorizontalPadding
 import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.WorldClockTheme
 import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.buildTimezoneRows
 import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.filterTimezoneRows
@@ -96,9 +97,10 @@ private fun TimezonePickerScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .statusBarsPadding()
             .imePadding()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = WorldClockHorizontalPadding)
     ) {
         SearchBar(
             inputField = {
@@ -110,14 +112,11 @@ private fun TimezonePickerScreen(
                     onExpandedChange = {},
                     placeholder = { Text(stringResource(R.string.timezone_search_hint)) },
                     leadingIcon = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(onClick = onBack) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = stringResource(R.string.timezone_search_close)
-                                )
-                            }
-                            Icon(Icons.Filled.Search, contentDescription = null)
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = stringResource(R.string.timezone_search_close)
+                            )
                         }
                     },
                     trailingIcon = {
@@ -137,6 +136,7 @@ private fun TimezonePickerScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp, bottom = 8.dp),
+            shape = WorldClockCardShape,
             colors = SearchBarDefaults.colors(
                 containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)
             ),
