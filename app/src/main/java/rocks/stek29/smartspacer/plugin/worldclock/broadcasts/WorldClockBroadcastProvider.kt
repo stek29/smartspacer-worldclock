@@ -1,5 +1,6 @@
 package rocks.stek29.smartspacer.plugin.worldclock.broadcasts
 
+import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
@@ -24,13 +25,21 @@ class WorldClockBroadcastProvider : SmartspacerBroadcastProvider() {
 
     companion object {
         const val AUTHORITY = "${BuildConfig.APPLICATION_ID}.broadcasts.worldclock"
+
+        fun notifyConfigChanged(context: Context) {
+            val uri = Uri.Builder()
+                .scheme("content")
+                .authority(AUTHORITY)
+                .build()
+            context.contentResolver.notifyChange(uri, null)
+        }
     }
 
     override fun onReceive(intent: Intent) {
         if (intent.action == Intent.ACTION_TIMEZONE_CHANGED) {
             WorldClockConfigRepository.invalidateAll()
         }
-        notifyBroadcastConfigChanged()
+        notifyConfigChanged(provideContext())
         SmartspacerComplicationProvider.notifyChange(
             provideContext(),
             WorldClockComplication::class.java
@@ -59,11 +68,4 @@ class WorldClockBroadcastProvider : SmartspacerBroadcastProvider() {
         }))
     }
 
-    private fun notifyBroadcastConfigChanged() {
-        val uri = Uri.Builder()
-            .scheme("content")
-            .authority(AUTHORITY)
-            .build()
-        provideContext().contentResolver.notifyChange(uri, null)
-    }
 }

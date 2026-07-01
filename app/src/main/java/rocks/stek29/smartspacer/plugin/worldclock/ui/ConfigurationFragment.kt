@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import rocks.stek29.smartspacer.plugin.worldclock.R
+import rocks.stek29.smartspacer.plugin.worldclock.broadcasts.WorldClockBroadcastProvider
 import rocks.stek29.smartspacer.plugin.worldclock.complications.WorldClockComplication
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockComplicationData
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockConfigRepository
@@ -303,6 +304,7 @@ class ConfigurationFragment : Fragment() {
             saveConfigState(updated)
             bindConfig(updated)
             WorldClockConfigRepository.invalidateConfig(smartspacerId)
+            WorldClockBroadcastProvider.notifyConfigChanged(requireContext())
             notifyProviderChanged()
         }
     }
@@ -320,6 +322,7 @@ class ConfigurationFragment : Fragment() {
             saveConfigState(updated)
             bindConfig(updated)
             WorldClockConfigRepository.invalidateConfig(smartspacerId)
+            WorldClockBroadcastProvider.notifyConfigChanged(requireContext())
             notifyProviderChanged()
         }
     }
