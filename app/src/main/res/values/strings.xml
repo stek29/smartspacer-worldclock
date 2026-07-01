@@ -48,7 +48,7 @@
     <string name="icon_style_work">Work</string>
     <string name="icon_style_travel">Travel</string>
     <string name="icon_style_globe">Globe</string>
-    <string name="target_icon_note">This icon is used in the target list. It appears on the target only when the label is shown in subtitle.</string>
+    <string name="target_icon_note">For targets, this icon is only shown in the subtitle line when subtitle mode is enabled.</string>
     <string name="requirement_timezone_offset_label">Timezone Offset</string>
     <string name="requirement_timezone_offset_description">Only show when the selected timezone has a different GMT offset from this device.</string>
     <string name="requirement_timezone_offset_description_configured">Only show when %1$s (%2$s) differs from this device (%3$s).</string>

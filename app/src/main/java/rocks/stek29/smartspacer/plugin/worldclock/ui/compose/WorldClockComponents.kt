@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -159,27 +161,38 @@ fun <T> HorizontalIconSegmentedSelector(
     onSelected: (T) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.Start
-    ) {
-        SingleChoiceSegmentedButtonRow {
-            options.forEachIndexed { index, option ->
-                val isSelected = option == selected
-                SegmentedButton(
-                    selected = isSelected,
-                    onClick = { onSelected(option) },
-                    shape = SegmentedButtonDefaults.itemShape(index, options.size),
-                    modifier = Modifier.width(56.dp),
-                    icon = {}
-                ) {
-                    Icon(
-                        painter = painterResource(iconRes(option)),
-                        contentDescription = contentDescription(option),
-                        modifier = Modifier.size(20.dp)
-                    )
+    BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
+        val minimumSegmentWidth = 56.dp
+        val totalMinimumWidth = minimumSegmentWidth * options.size
+        val shouldScroll = maxWidth < totalMinimumWidth
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(if (shouldScroll) Modifier.horizontalScroll(rememberScrollState()) else Modifier),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            SingleChoiceSegmentedButtonRow(
+                modifier = if (shouldScroll) {
+                    Modifier.requiredWidth(totalMinimumWidth)
+                } else {
+                    Modifier.fillMaxWidth()
+                }
+            ) {
+                options.forEachIndexed { index, option ->
+                    val isSelected = option == selected
+                    SegmentedButton(
+                        selected = isSelected,
+                        onClick = { onSelected(option) },
+                        shape = SegmentedButtonDefaults.itemShape(index, options.size),
+                        modifier = Modifier.weight(1f),
+                        icon = {}
+                    ) {
+                        Icon(
+                            painter = painterResource(iconRes(option)),
+                            contentDescription = contentDescription(option),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }
@@ -249,7 +262,11 @@ fun SwitchCard(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(title, style = MaterialTheme.typography.titleMedium)
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
                 Text(
                     summary,
                     style = MaterialTheme.typography.bodySmall,

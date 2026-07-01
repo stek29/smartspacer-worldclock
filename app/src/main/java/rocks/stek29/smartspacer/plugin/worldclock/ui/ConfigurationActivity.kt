@@ -39,6 +39,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
@@ -60,6 +61,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.google.gson.Gson
 import com.kieronquinn.app.smartspacer.sdk.SmartspacerConstants
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerComplicationProvider
@@ -95,7 +99,9 @@ import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.WorldClockTheme
 import rocks.stek29.smartspacer.plugin.worldclock.ui.compose.worldClockSpring
 import rocks.stek29.smartspacer.plugin.worldclock.utils.TimeFormatter
 import java.time.Clock
+import java.time.Instant
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -273,6 +279,7 @@ private fun ConfigurationRoute(
     notifyChanged: () -> Unit
 ) {
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val scope = rememberCoroutineScope()
     var state by remember(smartspacerId, type) { mutableStateOf<ConfigState?>(null) }
     var tick by remember { mutableLongStateOf(System.currentTimeMillis()) }
@@ -296,8 +303,20 @@ private fun ConfigurationRoute(
     }
     LaunchedEffect(Unit) {
         while (true) {
+            tick = System.currentTimeMillis()
             delay(ConfigurationActivity.millisUntilNextMinute())
             tick = System.currentTimeMillis()
+        }
+    }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                tick = System.currentTimeMillis()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
         }
     }
 
@@ -432,7 +451,6 @@ private fun ConfigurationScreen(
                         value = labelModeLabel(labelMode),
                         onValueChange = {},
                         readOnly = true,
-                        label = { Text(stringResource(R.string.label_mode_title)) },
                         trailingIcon = {
                             Icon(
                                 Icons.Filled.ArrowDropDown,
@@ -534,7 +552,7 @@ private fun ConfigurationScreen(
                         onCheckedChange = { checked ->
                             onStateChange(state.copy(showLabelInSubtitle = checked))
                         },
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = 8.dp, bottom = 3.dp)
                     )
                 }
             }
@@ -548,7 +566,7 @@ private fun ConfigurationScreen(
                         onCheckedChange = { checked ->
                             onStateChange(state.copy(hideSubtitleOnAod = checked))
                         },
-                        modifier = Modifier.padding(top = 8.dp)
+                        modifier = Modifier.padding(top = 8.dp, bottom = 3.dp)
                     )
                 }
             }
@@ -560,24 +578,27 @@ private fun ConfigurationScreen(
 private fun WorldClockPreviewCard(
     state: ConfigState,
     type: ConfigurationActivity.Type,
-    @Suppress("UNUSED_PARAMETER") tick: Long
+    tick: Long
 ) {
     val context = LocalContext.current
     val data = state.common
     val isTarget = type == ConfigurationActivity.Type.TARGET
-    val visible = TimeFormatter.isVisible(data)
+    val clock = remember(tick) {
+        Clock.fixed(Instant.ofEpochMilli(tick), ZoneOffset.UTC)
+    }
+    val visible = TimeFormatter.isVisible(data, clock)
     val visibleData = if (visible) data else data.copy(mode = WorldClockComplicationData.Mode.NORMAL)
     val title = if (isTarget) {
         if (state.showLabelInSubtitle) {
-            TimeFormatter.buildTargetTitle(context, state.copy(common = visibleData).toTargetData())
+            TimeFormatter.buildTargetTitle(context, state.copy(common = visibleData).toTargetData(), clock)
         } else {
-            TimeFormatter.buildTargetTitleWithLabel(context, state.copy(common = visibleData).toTargetData())
+            TimeFormatter.buildTargetTitleWithLabel(context, state.copy(common = visibleData).toTargetData(), clock)
         }
     } else {
-        TimeFormatter.buildContent(context, visibleData)
+        TimeFormatter.buildContent(context, visibleData, clock)
     }
     val subtitle = if (isTarget && state.showLabelInSubtitle) {
-        TimeFormatter.buildTargetLabel(state.copy(common = visibleData).toTargetData())
+        TimeFormatter.buildTargetLabel(state.copy(common = visibleData).toTargetData(), clock)
     } else {
         null
     }
@@ -598,20 +619,10 @@ private fun WorldClockPreviewCard(
                 color = previewColors.surfaceContainerHigh,
                 contentColor = previewColors.onSurface
             ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
-                ) {
-                    PreviewAlpha(visible) {
-                        Icon(
-                            painter = painterResource(WorldClockIconStyle.drawableFor(data.iconStyle)),
-                            contentDescription = stringResource(R.string.icon_style_title),
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
+                if (isTarget) {
                     Column(
-                        modifier = Modifier
-                            .padding(start = 12.dp)
-                            .weight(1f)
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         PreviewAlpha(visible) {
                             Text(
@@ -623,14 +634,54 @@ private fun WorldClockPreviewCard(
                             )
                         }
                         if (subtitle != null) {
-                            Text(
-                                text = subtitle,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = previewColors.onSurfaceVariant,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
-                                modifier = Modifier.alpha(if (visible) 1f else 0.72f)
+                            Row {
+                                Icon(
+                                    painter = painterResource(WorldClockIconStyle.drawableFor(data.iconStyle)),
+                                    contentDescription = stringResource(R.string.icon_style_title),
+                                    tint = previewColors.onSurfaceVariant,
+                                    modifier = Modifier
+                                        .padding(top = 1.dp)
+                                        .size(16.dp)
+                                        .alpha(if (visible) 1f else 0.52f)
+                                )
+                                Text(
+                                    text = subtitle,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = previewColors.onSurfaceVariant,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis,
+                                    modifier = Modifier
+                                        .padding(start = 8.dp)
+                                        .alpha(if (visible) 1f else 0.72f)
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+                    ) {
+                        PreviewAlpha(visible) {
+                            Icon(
+                                painter = painterResource(WorldClockIconStyle.drawableFor(data.iconStyle)),
+                                contentDescription = stringResource(R.string.icon_style_title),
+                                modifier = Modifier.size(24.dp)
                             )
+                        }
+                        Column(
+                            modifier = Modifier
+                                .padding(start = 12.dp)
+                                .weight(1f)
+                        ) {
+                            PreviewAlpha(visible) {
+                                Text(
+                                    text = title,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = previewColors.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
                 }
