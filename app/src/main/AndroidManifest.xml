@@ -37,6 +37,16 @@
         </provider>
 
         <provider
+            android:name=".targets.WorldClockTarget"
+            android:authorities="${applicationId}.target.worldclock"
+            android:exported="true"
+            android:permission="com.kieronquinn.app.smartspacer.permission.ACCESS_SMARTSPACER_TARGETS">
+            <intent-filter>
+                <action android:name="com.kieronquinn.app.smartspacer.TARGET" />
+            </intent-filter>
+        </provider>
+
+        <provider
             android:name=".broadcasts.WorldClockBroadcastProvider"
             android:authorities="${applicationId}.broadcasts.worldclock"
             android:exported="true"

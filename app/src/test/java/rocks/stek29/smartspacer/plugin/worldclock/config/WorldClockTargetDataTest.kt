@@ -1,0 +1,42 @@
+package rocks.stek29.smartspacer.plugin.worldclock.config
+
+import com.google.gson.Gson
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import java.time.ZoneId
+
+class WorldClockTargetDataTest {
+
+    @Test
+    fun defaultsMatchDefaults() {
+        val data = WorldClockTargetData()
+
+        assertEquals(ZoneId.systemDefault().id, data.timezoneId)
+        assertEquals(WorldClockComplicationData.Mode.HOME, data.mode)
+        assertEquals(WorldClockComplicationData.TimeFormat.SYSTEM_DEFAULT, data.timeFormat)
+        assertEquals("", data.customLabel)
+        assertFalse(data.showOffsetLabel)
+        assertEquals(WorldClockComplicationData.IconStyle.HOME, data.iconStyle)
+        assertFalse(data.hideSubtitleOnAod)
+    }
+
+    @Test
+    fun gsonRoundTripPreservesTargetData() {
+        val gson = Gson()
+        val data = WorldClockTargetData(
+            timezoneId = "Asia/Tokyo",
+            mode = WorldClockComplicationData.Mode.NORMAL,
+            timeFormat = WorldClockComplicationData.TimeFormat.HOUR_24,
+            customLabel = "Tokyo",
+            showOffsetLabel = true,
+            hideSubtitleOnAod = true
+        )
+
+        val restored = gson.fromJson(gson.toJson(data), WorldClockTargetData::class.java)
+
+        assertEquals(data, restored)
+        assertTrue(gson.toJson(data).contains("hide_subtitle_on_aod"))
+    }
+}

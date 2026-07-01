@@ -3,11 +3,14 @@ package rocks.stek29.smartspacer.plugin.worldclock.utils
 import android.content.Context
 import android.text.format.DateFormat
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockComplicationData
+import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockSettings
+import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockTargetData
 import java.text.SimpleDateFormat
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
@@ -18,7 +21,7 @@ object TimeFormatter {
     const val MAX_CONTENT_LENGTH = 12
     private const val SEPARATOR = " "
 
-    fun isVisible(data: WorldClockComplicationData, clock: Clock = Clock.systemUTC()): Boolean {
+    fun isVisible(data: WorldClockSettings, clock: Clock = Clock.systemUTC()): Boolean {
         val instant = clock.instant()
         return when (data.mode) {
             WorldClockComplicationData.Mode.NORMAL -> true
@@ -59,6 +62,27 @@ object TimeFormatter {
             data.showOffsetLabel -> truncateOffsetContent(time, zone, instant, locale)
             else -> time
         }
+    }
+
+    fun buildTargetTitle(
+        context: Context,
+        data: WorldClockSettings,
+        clock: Clock = Clock.systemUTC()
+    ): String {
+        val zone = ZoneId.of(data.timezoneId)
+        return formatTime(context, zone, data.timeFormat, clock.instant())
+    }
+
+    fun buildTargetSubtitle(
+        data: WorldClockSettings,
+        clock: Clock = Clock.systemUTC(),
+        locale: Locale = Locale.getDefault()
+    ): String {
+        if (data.customLabel.isNotBlank()) return data.customLabel.trim()
+        val zone = ZoneId.of(data.timezoneId)
+        if (data.showOffsetLabel) return formatOffset(zone, clock.instant(), locale)
+        return zone.getDisplayName(TextStyle.FULL, locale).takeIf { it.isNotBlank() }
+            ?: data.timezoneId
     }
 
     fun formatTime(

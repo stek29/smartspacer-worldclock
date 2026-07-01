@@ -67,20 +67,36 @@
                         android:contentDescription="@string/icon_style_title"
                         app:tint="?attr/colorOnSurface" />
 
-                    <TextView
-                        android:id="@+id/preview_content"
+                    <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="12dp"
                         android:layout_weight="1"
-                        android:ellipsize="end"
-                        android:maxLines="1"
-                        android:textAppearance="?attr/textAppearanceTitleMedium"
-                        android:textColor="?attr/colorOnSurface" />
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/preview_content"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textAppearance="?attr/textAppearanceTitleMedium"
+                            android:textColor="?attr/colorOnSurface" />
+
+                        <TextView
+                            android:id="@+id/preview_state"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textAppearance="?attr/textAppearanceBodySmall"
+                            android:textColor="?attr/colorOnSurfaceVariant" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <TextView
-                    android:id="@+id/preview_state"
+                    android:id="@+id/preview_visibility"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
@@ -313,6 +329,28 @@
                 android:layout_height="64dp"
                 android:paddingHorizontal="20dp"
                 android:text="@string/show_offset_label_title"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurface" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/hide_subtitle_on_aod_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/glass_surface"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/glass_stroke"
+            app:strokeWidth="1dp">
+
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/hide_subtitle_on_aod"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:paddingHorizontal="20dp"
+                android:text="@string/hide_subtitle_on_aod_title"
                 android:textAppearance="?attr/textAppearanceTitleMedium"
                 android:textColor="?attr/colorOnSurface" />
         </com.google.android.material.card.MaterialCardView>

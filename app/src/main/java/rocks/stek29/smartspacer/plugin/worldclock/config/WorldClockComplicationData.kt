@@ -5,18 +5,18 @@ import java.time.ZoneId
 
 data class WorldClockComplicationData(
     @SerializedName("timezone")
-    val timezoneId: String = ZoneId.systemDefault().id,
+    override val timezoneId: String = ZoneId.systemDefault().id,
     @SerializedName("mode")
-    val mode: Mode = Mode.HOME,
+    override val mode: Mode = Mode.HOME,
     @SerializedName("time_format")
-    val timeFormat: TimeFormat = TimeFormat.SYSTEM_DEFAULT,
+    override val timeFormat: TimeFormat = TimeFormat.SYSTEM_DEFAULT,
     @SerializedName("custom_label")
-    val customLabel: String = "",
+    override val customLabel: String = "",
     @SerializedName("show_offset_label")
-    val showOffsetLabel: Boolean = false,
+    override val showOffsetLabel: Boolean = false,
     @SerializedName("icon_style")
-    val iconStyle: IconStyle = IconStyle.HOME
-) {
+    override val iconStyle: IconStyle = IconStyle.HOME
+) : WorldClockSettings {
     enum class Mode {
         NORMAL,
         HOME

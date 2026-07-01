@@ -5,6 +5,7 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockComplicationData
+import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockTargetData
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
@@ -168,6 +169,26 @@ class TimeFormatterTest {
 
         assertEquals("21:00", tokyo)
         assertEquals("13:00", london)
+    }
+
+    @Test
+    fun targetSubtitleUsesUntrimmedCustomLabel() {
+        val data = WorldClockTargetData(
+            customLabel = "Tokyo Station Long Label"
+        )
+
+        assertEquals("Tokyo Station Long Label", TimeFormatter.buildTargetSubtitle(data))
+    }
+
+    @Test
+    fun targetSubtitleUsesOffsetWhenEnabled() {
+        val clock = fixedClock("2026-06-30T12:00:00Z")
+        val data = WorldClockTargetData(
+            timezoneId = "Asia/Tokyo",
+            showOffsetLabel = true
+        )
+
+        assertEquals("GMT+9", TimeFormatter.buildTargetSubtitle(data, clock, Locale.US))
     }
 
     private fun fixedClock(instant: String): Clock {

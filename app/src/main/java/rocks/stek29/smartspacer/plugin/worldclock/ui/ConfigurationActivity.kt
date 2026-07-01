@@ -1,6 +1,7 @@
 package rocks.stek29.smartspacer.plugin.worldclock.ui
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
@@ -16,6 +17,7 @@ import org.koin.android.ext.android.inject
 import rocks.stek29.smartspacer.plugin.worldclock.R
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockComplicationData
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockConfigRepository
+import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockTargetData
 
 class ConfigurationActivity : AppCompatActivity() {
 
@@ -24,6 +26,9 @@ class ConfigurationActivity : AppCompatActivity() {
 
     val smartspacerId: String?
         get() = intent.getStringExtra(SmartspacerConstants.EXTRA_SMARTSPACER_ID)
+
+    private val type: Type
+        get() = Type.fromIntent(intent)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,10 +39,10 @@ class ConfigurationActivity : AppCompatActivity() {
             finish()
             return
         }
-        ensureDefaultConfig(id)
+        ensureDefaultConfig(id, type)
         setResult(Activity.RESULT_OK)
         if (savedInstanceState == null) {
-            showFragment(id)
+            showFragment(id, type)
         }
     }
 
@@ -52,28 +57,72 @@ class ConfigurationActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         val id = smartspacerId ?: return finish()
-        ensureDefaultConfig(id)
+        ensureDefaultConfig(id, type)
         setResult(Activity.RESULT_OK)
-        showFragment(id)
+        showFragment(id, type)
     }
 
-    private fun ensureDefaultConfig(smartspacerId: String) {
+    private fun ensureDefaultConfig(smartspacerId: String, type: Type) {
         runBlocking {
-            val existing = WorldClockConfigRepository.getConfig(dataStore, gson, smartspacerId).first()
-            if (existing == null) {
-                WorldClockConfigRepository.putConfig(
-                    dataStore = dataStore,
-                    gson = gson,
-                    smartspacerId = smartspacerId,
-                    data = WorldClockComplicationData()
-                )
+            when (type) {
+                Type.COMPLICATION -> {
+                    val existing = WorldClockConfigRepository.getConfig(dataStore, gson, smartspacerId).first()
+                    if (existing == null) {
+                        WorldClockConfigRepository.putConfig(
+                            dataStore = dataStore,
+                            gson = gson,
+                            smartspacerId = smartspacerId,
+                            data = WorldClockComplicationData()
+                        )
+                    }
+                }
+                Type.TARGET -> {
+                    val existing = WorldClockConfigRepository.getTargetConfig(
+                        dataStore,
+                        gson,
+                        smartspacerId
+                    ).first()
+                    if (existing == null) {
+                        WorldClockConfigRepository.putTargetConfig(
+                            dataStore = dataStore,
+                            gson = gson,
+                            smartspacerId = smartspacerId,
+                            data = WorldClockTargetData()
+                        )
+                    }
+                }
             }
         }
     }
 
-    private fun showFragment(smartspacerId: String) {
+    private fun showFragment(smartspacerId: String, type: Type) {
         supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, ConfigurationFragment.newInstance(smartspacerId))
+            .replace(R.id.fragment_container, ConfigurationFragment.newInstance(smartspacerId, type))
             .commit()
+    }
+
+    enum class Type {
+        COMPLICATION,
+        TARGET;
+
+        companion object {
+            private const val EXTRA_TYPE = "rocks.stek29.smartspacer.plugin.worldclock.extra.TYPE"
+
+            fun fromIntent(intent: Intent): Type {
+                return runCatching {
+                    valueOf(intent.getStringExtra(EXTRA_TYPE) ?: COMPLICATION.name)
+                }.getOrDefault(COMPLICATION)
+            }
+
+            fun putExtra(intent: Intent, type: Type): Intent {
+                return intent.putExtra(EXTRA_TYPE, type.name)
+            }
+        }
+    }
+
+    companion object {
+        fun createIntent(context: Context, type: Type): Intent {
+            return Type.putExtra(Intent(context, ConfigurationActivity::class.java), type)
+        }
     }
 }

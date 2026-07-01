@@ -24,6 +24,7 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerComplicationProvider
+import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -32,6 +33,8 @@ import rocks.stek29.smartspacer.plugin.worldclock.complications.WorldClockCompli
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockComplicationData
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockConfigRepository
 import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockIconStyle
+import rocks.stek29.smartspacer.plugin.worldclock.config.WorldClockTargetData
+import rocks.stek29.smartspacer.plugin.worldclock.targets.WorldClockTarget
 import rocks.stek29.smartspacer.plugin.worldclock.utils.TimeFormatter
 import java.time.Clock
 import java.time.ZoneId
@@ -43,12 +46,18 @@ class ConfigurationFragment : Fragment() {
     private val dataStore by inject<DataStore<Preferences>>()
     private val gson by inject<Gson>()
     private val smartspacerId by lazy { requireArguments().getString(ARG_SMARTSPACER_ID)!! }
+    private val type by lazy {
+        ConfigurationActivity.Type.valueOf(
+            requireArguments().getString(ARG_TYPE) ?: ConfigurationActivity.Type.COMPLICATION.name
+        )
+    }
 
     private var bindingConfig = false
 
     private lateinit var previewIcon: ImageView
     private lateinit var previewContent: TextView
     private lateinit var previewState: TextView
+    private lateinit var previewVisibility: TextView
     private lateinit var iconGroup: MaterialButtonToggleGroup
     private lateinit var modeGroup: MaterialButtonToggleGroup
     private lateinit var timezoneCard: MaterialCardView
@@ -58,6 +67,8 @@ class ConfigurationFragment : Fragment() {
     private lateinit var customLabelContainer: TextInputLayout
     private lateinit var customLabel: TextInputEditText
     private lateinit var showOffset: MaterialSwitch
+    private lateinit var hideSubtitleOnAodCard: MaterialCardView
+    private lateinit var hideSubtitleOnAod: MaterialSwitch
 
     private val timezonePicker = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -82,7 +93,7 @@ class ConfigurationFragment : Fragment() {
         applyInsets(view)
         bindActions()
         viewLifecycleOwner.lifecycleScope.launch {
-            bindConfig(loadConfig() ?: WorldClockComplicationData())
+            bindConfig(loadConfigState())
         }
     }
 
@@ -90,6 +101,7 @@ class ConfigurationFragment : Fragment() {
         previewIcon = view.findViewById(R.id.preview_icon)
         previewContent = view.findViewById(R.id.preview_content)
         previewState = view.findViewById(R.id.preview_state)
+        previewVisibility = view.findViewById(R.id.preview_visibility)
         iconGroup = view.findViewById(R.id.icon_group)
         modeGroup = view.findViewById(R.id.mode_group)
         timezoneCard = view.findViewById(R.id.timezone_card)
@@ -99,6 +111,13 @@ class ConfigurationFragment : Fragment() {
         customLabelContainer = view.findViewById(R.id.custom_label_container)
         customLabel = view.findViewById(R.id.custom_label)
         showOffset = view.findViewById(R.id.show_offset)
+        hideSubtitleOnAodCard = view.findViewById(R.id.hide_subtitle_on_aod_card)
+        hideSubtitleOnAod = view.findViewById(R.id.hide_subtitle_on_aod)
+        hideSubtitleOnAodCard.visibility = if (type == ConfigurationActivity.Type.TARGET) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
     }
 
     private fun applyInsets(view: View) {
@@ -173,9 +192,14 @@ class ConfigurationFragment : Fragment() {
                 )
             }
         }
+        hideSubtitleOnAod.setOnCheckedChangeListener { _, checked ->
+            if (bindingConfig) return@setOnCheckedChangeListener
+            updateTargetConfig { copy(hideSubtitleOnAod = checked) }
+        }
     }
 
-    private fun bindConfig(data: WorldClockComplicationData) {
+    private fun bindConfig(state: ConfigState) {
+        val data = state.common
         bindingConfig = true
         iconGroup.check(
             when (data.iconStyle) {
@@ -207,8 +231,9 @@ class ConfigurationFragment : Fragment() {
         showOffset.isEnabled = data.customLabel.isBlank()
         customLabelContainer.isEnabled = !data.showOffsetLabel
         customLabel.isEnabled = !data.showOffsetLabel
+        hideSubtitleOnAod.isChecked = state.hideSubtitleOnAod
         bindTimezone(data)
-        bindPreview(data)
+        bindPreview(state)
         bindingConfig = false
     }
 
@@ -224,51 +249,149 @@ class ConfigurationFragment : Fragment() {
         )
     }
 
-    private fun bindPreview(data: WorldClockComplicationData) {
+    private fun bindPreview(state: ConfigState) {
+        val data = state.common
+        val isTarget = type == ConfigurationActivity.Type.TARGET
         previewIcon.setImageResource(WorldClockIconStyle.drawableFor(data.iconStyle))
+        previewState.maxLines = if (isTarget) 2 else 1
+        previewState.visibility = if (isTarget) View.VISIBLE else View.GONE
         if (TimeFormatter.isVisible(data)) {
-            previewContent.text = TimeFormatter.buildContent(requireContext(), data)
+            previewContent.text = if (isTarget) {
+                TimeFormatter.buildTargetTitle(requireContext(), state.toTargetData())
+            } else {
+                TimeFormatter.buildContent(requireContext(), data)
+            }
             previewContent.alpha = 1f
             previewIcon.alpha = 1f
-            previewState.text = getString(R.string.preview_visible)
+            previewState.alpha = 1f
+            if (isTarget) {
+                previewState.text = TimeFormatter.buildTargetSubtitle(state.toTargetData())
+            }
+            previewVisibility.text = getString(R.string.preview_visible)
         } else {
-            previewContent.text = TimeFormatter.buildContent(
-                requireContext(),
-                data.copy(mode = WorldClockComplicationData.Mode.NORMAL)
-            )
+            val visibleData = data.copy(mode = WorldClockComplicationData.Mode.NORMAL)
+            previewContent.text = if (isTarget) {
+                TimeFormatter.buildTargetTitle(requireContext(), state.copy(common = visibleData).toTargetData())
+            } else {
+                TimeFormatter.buildContent(requireContext(), visibleData)
+            }
+            if (isTarget) {
+                previewState.text = TimeFormatter.buildTargetSubtitle(
+                    state.copy(common = visibleData).toTargetData()
+                )
+            }
             previewContent.alpha = 0.52f
             previewIcon.alpha = 0.52f
-            previewState.text = getString(R.string.preview_hidden_home)
+            previewState.alpha = 0.72f
+            previewVisibility.text = getString(R.string.preview_hidden_home)
         }
     }
 
     private fun updateConfig(transform: WorldClockComplicationData.() -> WorldClockComplicationData) {
         viewLifecycleOwner.lifecycleScope.launch {
-            val updated = (loadConfig() ?: WorldClockComplicationData()).transform()
-            WorldClockConfigRepository.putConfig(dataStore, gson, smartspacerId, updated)
+            val current = loadConfigState()
+            val updated = current.copy(common = current.common.transform())
+            saveConfigState(updated)
             bindConfig(updated)
             WorldClockConfigRepository.invalidateConfig(smartspacerId)
-            SmartspacerComplicationProvider.notifyChange(
-                requireContext(),
-                WorldClockComplication::class.java,
-                smartspacerId
-            )
+            notifyProviderChanged()
         }
     }
 
-    private suspend fun loadConfig(): WorldClockComplicationData? {
-        return WorldClockConfigRepository.getConfig(dataStore, gson, smartspacerId).first()
+    private fun updateTargetConfig(transform: WorldClockTargetData.() -> WorldClockTargetData) {
+        if (type != ConfigurationActivity.Type.TARGET) return
+        viewLifecycleOwner.lifecycleScope.launch {
+            val current = loadConfigState()
+            val updatedTarget = current.toTargetData().transform()
+            val updated = ConfigState(updatedTarget.toComplicationData(), updatedTarget.hideSubtitleOnAod)
+            saveConfigState(updated)
+            bindConfig(updated)
+            WorldClockConfigRepository.invalidateConfig(smartspacerId)
+            notifyProviderChanged()
+        }
+    }
+
+    private suspend fun loadConfigState(): ConfigState {
+        return when (type) {
+            ConfigurationActivity.Type.COMPLICATION -> {
+                val data = WorldClockConfigRepository.getConfig(dataStore, gson, smartspacerId).first()
+                    ?: WorldClockComplicationData()
+                ConfigState(data)
+            }
+            ConfigurationActivity.Type.TARGET -> {
+                val data = WorldClockConfigRepository.getTargetConfig(dataStore, gson, smartspacerId).first()
+                    ?: WorldClockTargetData()
+                ConfigState(data.toComplicationData(), data.hideSubtitleOnAod)
+            }
+        }
+    }
+
+    private suspend fun saveConfigState(state: ConfigState) {
+        when (type) {
+            ConfigurationActivity.Type.COMPLICATION -> {
+                WorldClockConfigRepository.putConfig(dataStore, gson, smartspacerId, state.common)
+            }
+            ConfigurationActivity.Type.TARGET -> {
+                WorldClockConfigRepository.putTargetConfig(
+                    dataStore,
+                    gson,
+                    smartspacerId,
+                    state.toTargetData()
+                )
+            }
+        }
+    }
+
+    private fun notifyProviderChanged() {
+        when (type) {
+            ConfigurationActivity.Type.COMPLICATION -> {
+                SmartspacerComplicationProvider.notifyChange(
+                    requireContext(),
+                    WorldClockComplication::class.java,
+                    smartspacerId
+                )
+            }
+            ConfigurationActivity.Type.TARGET -> {
+                SmartspacerTargetProvider.notifyChange(
+                    requireContext(),
+                    WorldClockTarget::class.java,
+                    smartspacerId
+                )
+            }
+        }
     }
 
     companion object {
         private const val ARG_SMARTSPACER_ID = "smartspacer_id"
+        private const val ARG_TYPE = "type"
 
-        fun newInstance(smartspacerId: String): ConfigurationFragment {
+        fun newInstance(
+            smartspacerId: String,
+            type: ConfigurationActivity.Type
+        ): ConfigurationFragment {
             return ConfigurationFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_SMARTSPACER_ID, smartspacerId)
+                    putString(ARG_TYPE, type.name)
                 }
             }
+        }
+    }
+
+    private data class ConfigState(
+        val common: WorldClockComplicationData,
+        val hideSubtitleOnAod: Boolean = false
+    ) {
+        fun toTargetData(): WorldClockTargetData {
+            return WorldClockTargetData(
+                timezoneId = common.timezoneId,
+                mode = common.mode,
+                timeFormat = common.timeFormat,
+                customLabel = common.customLabel,
+                showOffsetLabel = common.showOffsetLabel,
+                iconStyle = common.iconStyle,
+                hideSubtitleOnAod = hideSubtitleOnAod
+            )
         }
     }
 }

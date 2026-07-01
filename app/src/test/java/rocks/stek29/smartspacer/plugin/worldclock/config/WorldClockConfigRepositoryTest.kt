@@ -73,6 +73,46 @@ class WorldClockConfigRepositoryTest {
     }
 
     @Test
+    fun targetConfigUsesSeparateKeyFromComplicationConfig() = runBlocking {
+        val dataStore = createDataStore()
+        val complication = data("Asia/Tokyo")
+        val target = targetData("Europe/London")
+
+        WorldClockConfigRepository.putConfig(dataStore, gson, smartspacerId, complication)
+        WorldClockConfigRepository.putTargetConfig(dataStore, gson, smartspacerId, target)
+
+        assertEquals(complication, WorldClockConfigRepository.getConfigOnce(
+            dataStore,
+            gson,
+            smartspacerId
+        ))
+        assertEquals(target, WorldClockConfigRepository.getTargetConfigOnce(
+            dataStore,
+            gson,
+            smartspacerId
+        ))
+    }
+
+    @Test
+    fun deleteTargetConfigDoesNotDeleteComplicationConfig() = runBlocking {
+        val dataStore = createDataStore()
+        val complication = data("Asia/Tokyo")
+        val target = targetData("Europe/London")
+
+        WorldClockConfigRepository.putConfig(dataStore, gson, smartspacerId, complication)
+        WorldClockConfigRepository.putTargetConfig(dataStore, gson, smartspacerId, target)
+
+        WorldClockConfigRepository.deleteTargetConfig(dataStore, smartspacerId)
+
+        assertEquals(complication, WorldClockConfigRepository.getConfigOnce(
+            dataStore,
+            gson,
+            smartspacerId
+        ))
+        assertNull(WorldClockConfigRepository.getTargetConfigOnce(dataStore, gson, smartspacerId))
+    }
+
+    @Test
     fun invalidateAllForcesAllConfigsToReload() = runBlocking {
         val dataStore = createDataStore()
         val firstId = "first"
@@ -139,6 +179,16 @@ class WorldClockConfigRepositoryTest {
             mode = WorldClockComplicationData.Mode.NORMAL,
             timeFormat = WorldClockComplicationData.TimeFormat.HOUR_24,
             iconStyle = WorldClockComplicationData.IconStyle.WORLD_CLOCK
+        )
+    }
+
+    private fun targetData(timezoneId: String): WorldClockTargetData {
+        return WorldClockTargetData(
+            timezoneId = timezoneId,
+            mode = WorldClockComplicationData.Mode.NORMAL,
+            timeFormat = WorldClockComplicationData.TimeFormat.HOUR_24,
+            iconStyle = WorldClockComplicationData.IconStyle.WORLD_CLOCK,
+            hideSubtitleOnAod = true
         )
     }
 }
