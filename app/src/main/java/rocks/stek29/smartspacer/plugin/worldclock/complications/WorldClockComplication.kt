@@ -38,7 +38,8 @@ class WorldClockComplication : SmartspacerComplicationProvider() {
                 id = "worldclock_$smartspacerId",
                 icon = Icon(
                     AndroidIcon.createWithResource(context, icon),
-                    WorldClockIconStyle.labelFor(context, data.iconStyle)
+                    WorldClockIconStyle.labelFor(context, data.iconStyle),
+                    shouldTint = false
                 ),
                 content = Text(content),
                 onClick = TapAction(intent = Intent(AlarmClock.ACTION_SHOW_ALARMS))
