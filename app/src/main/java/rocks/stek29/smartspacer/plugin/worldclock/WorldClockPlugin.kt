@@ -5,7 +5,6 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-import com.google.android.material.color.DynamicColors
 import com.google.gson.Gson
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext
@@ -18,7 +17,6 @@ class WorldClockPlugin : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        DynamicColors.applyToActivitiesIfAvailable(this)
     }
 
     override fun attachBaseContext(base: Context) {

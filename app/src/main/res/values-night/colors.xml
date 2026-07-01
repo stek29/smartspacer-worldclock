@@ -2,7 +2,4 @@
 <resources>
     <color name="configuration_background_start">#201A25</color>
     <color name="configuration_background_end">#14211D</color>
-    <color name="glass_surface">#80211F26</color>
-    <color name="glass_surface_strong">#B3211F26</color>
-    <color name="glass_stroke">#33FFFFFF</color>
 </resources>
