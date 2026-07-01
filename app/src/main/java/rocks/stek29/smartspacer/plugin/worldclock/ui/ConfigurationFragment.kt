@@ -18,7 +18,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -27,6 +29,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerComplicationProvider
 import com.kieronquinn.app.smartspacer.sdk.provider.SmartspacerTargetProvider
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
@@ -56,6 +59,7 @@ class ConfigurationFragment : Fragment() {
     }
 
     private var bindingConfig = false
+    private var latestConfigState: ConfigState? = null
 
     private lateinit var previewIcon: ImageView
     private lateinit var previewContent: TextView
@@ -98,6 +102,7 @@ class ConfigurationFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             bindConfig(loadConfigState())
         }
+        startPreviewTicker()
     }
 
     private fun bindViews(view: View) {
@@ -195,6 +200,7 @@ class ConfigurationFragment : Fragment() {
     }
 
     private fun bindConfig(state: ConfigState) {
+        latestConfigState = state
         val data = state.common
         bindingConfig = true
         iconGroup.check(
@@ -297,6 +303,20 @@ class ConfigurationFragment : Fragment() {
         }
     }
 
+    private fun startPreviewTicker() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    delay(millisUntilNextMinute())
+                    latestConfigState?.let {
+                        bindTimezone(it.common)
+                        bindPreview(it)
+                    }
+                }
+            }
+        }
+    }
+
     private fun updateConfig(transform: WorldClockComplicationData.() -> WorldClockComplicationData) {
         viewLifecycleOwner.lifecycleScope.launch {
             val current = loadConfigState()
@@ -380,6 +400,12 @@ class ConfigurationFragment : Fragment() {
     companion object {
         private const val ARG_SMARTSPACER_ID = "smartspacer_id"
         private const val ARG_TYPE = "type"
+        private const val MINUTE_MILLIS = 60_000L
+
+        private fun millisUntilNextMinute(): Long {
+            val remainder = System.currentTimeMillis() % MINUTE_MILLIS
+            return if (remainder == 0L) MINUTE_MILLIS else MINUTE_MILLIS - remainder
+        }
 
         fun newInstance(
             smartspacerId: String,
