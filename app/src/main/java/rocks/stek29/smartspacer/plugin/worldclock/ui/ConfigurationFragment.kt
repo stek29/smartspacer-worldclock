@@ -64,9 +64,10 @@ class ConfigurationFragment : Fragment() {
     private lateinit var timezoneTitle: TextView
     private lateinit var timezoneSubtitle: TextView
     private lateinit var timeFormatGroup: MaterialButtonToggleGroup
+    private lateinit var labelModeGroup: MaterialButtonToggleGroup
+    private lateinit var labelModeTimezone: View
     private lateinit var customLabelContainer: TextInputLayout
     private lateinit var customLabel: TextInputEditText
-    private lateinit var showOffset: MaterialSwitch
     private lateinit var hideSubtitleOnAodCard: MaterialCardView
     private lateinit var hideSubtitleOnAod: MaterialSwitch
 
@@ -108,12 +109,18 @@ class ConfigurationFragment : Fragment() {
         timezoneTitle = view.findViewById(R.id.timezone_title)
         timezoneSubtitle = view.findViewById(R.id.timezone_subtitle)
         timeFormatGroup = view.findViewById(R.id.time_format_group)
+        labelModeGroup = view.findViewById(R.id.label_mode_group)
+        labelModeTimezone = view.findViewById(R.id.label_mode_timezone)
         customLabelContainer = view.findViewById(R.id.custom_label_container)
         customLabel = view.findViewById(R.id.custom_label)
-        showOffset = view.findViewById(R.id.show_offset)
         hideSubtitleOnAodCard = view.findViewById(R.id.hide_subtitle_on_aod_card)
         hideSubtitleOnAod = view.findViewById(R.id.hide_subtitle_on_aod)
         hideSubtitleOnAodCard.visibility = if (type == ConfigurationActivity.Type.TARGET) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
+        labelModeTimezone.visibility = if (type == ConfigurationActivity.Type.TARGET) {
             View.VISIBLE
         } else {
             View.GONE
@@ -169,6 +176,16 @@ class ConfigurationFragment : Fragment() {
             }
             updateConfig { copy(timeFormat = format) }
         }
+        labelModeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
+            if (bindingConfig || !isChecked) return@addOnButtonCheckedListener
+            val labelMode = when (checkedId) {
+                R.id.label_mode_timezone -> WorldClockComplicationData.LabelMode.TIMEZONE_NAME
+                R.id.label_mode_offset -> WorldClockComplicationData.LabelMode.OFFSET
+                R.id.label_mode_custom -> WorldClockComplicationData.LabelMode.CUSTOM
+                else -> WorldClockComplicationData.LabelMode.NONE
+            }
+            updateLabelMode(labelMode)
+        }
         customLabel.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
@@ -176,22 +193,10 @@ class ConfigurationFragment : Fragment() {
                 if (bindingConfig) return
                 val label = s?.toString()?.trim().orEmpty()
                 updateConfig {
-                    copy(
-                        customLabel = label,
-                        showOffsetLabel = if (label.isNotBlank()) false else showOffsetLabel
-                    )
+                    copy(customLabel = label).withLabelMode(WorldClockComplicationData.LabelMode.CUSTOM)
                 }
             }
         })
-        showOffset.setOnCheckedChangeListener { _, checked ->
-            if (bindingConfig) return@setOnCheckedChangeListener
-            updateConfig {
-                copy(
-                    showOffsetLabel = checked,
-                    customLabel = if (checked) "" else customLabel
-                )
-            }
-        }
         hideSubtitleOnAod.setOnCheckedChangeListener { _, checked ->
             if (bindingConfig) return@setOnCheckedChangeListener
             updateTargetConfig { copy(hideSubtitleOnAod = checked) }
@@ -224,13 +229,32 @@ class ConfigurationFragment : Fragment() {
                 WorldClockComplicationData.TimeFormat.HOUR_24 -> R.id.time_format_24h
             }
         )
+        val labelMode = if (
+            type == ConfigurationActivity.Type.COMPLICATION &&
+            data.labelMode == WorldClockComplicationData.LabelMode.TIMEZONE_NAME
+        ) {
+            WorldClockComplicationData.LabelMode.NONE
+        } else {
+            data.labelMode
+        }
+        labelModeGroup.check(
+            when (labelMode) {
+                WorldClockComplicationData.LabelMode.NONE -> R.id.label_mode_none
+                WorldClockComplicationData.LabelMode.TIMEZONE_NAME -> R.id.label_mode_timezone
+                WorldClockComplicationData.LabelMode.OFFSET -> R.id.label_mode_offset
+                WorldClockComplicationData.LabelMode.CUSTOM -> R.id.label_mode_custom
+            }
+        )
         if (customLabel.text?.toString() != data.customLabel) {
             customLabel.setText(data.customLabel)
         }
-        showOffset.isChecked = data.showOffsetLabel
-        showOffset.isEnabled = data.customLabel.isBlank()
-        customLabelContainer.isEnabled = !data.showOffsetLabel
-        customLabel.isEnabled = !data.showOffsetLabel
+        customLabelContainer.visibility = if (
+            data.labelMode == WorldClockComplicationData.LabelMode.CUSTOM
+        ) {
+            View.VISIBLE
+        } else {
+            View.GONE
+        }
         hideSubtitleOnAod.isChecked = state.hideSubtitleOnAod
         bindTimezone(data)
         bindPreview(state)
@@ -265,7 +289,9 @@ class ConfigurationFragment : Fragment() {
             previewIcon.alpha = 1f
             previewState.alpha = 1f
             if (isTarget) {
-                previewState.text = TimeFormatter.buildTargetSubtitle(state.toTargetData())
+                val subtitle = TimeFormatter.buildTargetSubtitle(state.toTargetData())
+                previewState.visibility = if (subtitle != null) View.VISIBLE else View.GONE
+                previewState.text = subtitle
             }
             previewVisibility.text = getString(R.string.preview_visible)
         } else {
@@ -276,9 +302,9 @@ class ConfigurationFragment : Fragment() {
                 TimeFormatter.buildContent(requireContext(), visibleData)
             }
             if (isTarget) {
-                previewState.text = TimeFormatter.buildTargetSubtitle(
-                    state.copy(common = visibleData).toTargetData()
-                )
+                val subtitle = TimeFormatter.buildTargetSubtitle(state.copy(common = visibleData).toTargetData())
+                previewState.visibility = if (subtitle != null) View.VISIBLE else View.GONE
+                previewState.text = subtitle
             }
             previewContent.alpha = 0.52f
             previewIcon.alpha = 0.52f
@@ -296,6 +322,10 @@ class ConfigurationFragment : Fragment() {
             WorldClockConfigRepository.invalidateConfig(smartspacerId)
             notifyProviderChanged()
         }
+    }
+
+    private fun updateLabelMode(labelMode: WorldClockComplicationData.LabelMode) {
+        updateConfig { withLabelMode(labelMode) }
     }
 
     private fun updateTargetConfig(transform: WorldClockTargetData.() -> WorldClockTargetData) {

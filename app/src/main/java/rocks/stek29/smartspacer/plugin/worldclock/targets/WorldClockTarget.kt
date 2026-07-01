@@ -44,7 +44,7 @@ class WorldClockTarget : SmartspacerTargetProvider() {
                     WorldClockIconStyle.labelFor(context, data.iconStyle)
                 ),
                 title = Text(TimeFormatter.buildTargetTitle(context, data)),
-                subtitle = Text(TimeFormatter.buildTargetSubtitle(data)),
+                subtitle = TimeFormatter.buildTargetSubtitle(data)?.let { Text(it) },
                 onClick = getClickAction()
             ).create().apply {
                 canTakeTwoComplications = true

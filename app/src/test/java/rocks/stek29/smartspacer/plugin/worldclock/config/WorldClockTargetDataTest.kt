@@ -19,6 +19,7 @@ class WorldClockTargetDataTest {
         assertEquals("", data.customLabel)
         assertFalse(data.showOffsetLabel)
         assertEquals(WorldClockComplicationData.IconStyle.HOME, data.iconStyle)
+        assertEquals(WorldClockComplicationData.LabelMode.TIMEZONE_NAME, data.labelMode)
         assertFalse(data.hideSubtitleOnAod)
     }
 
@@ -38,5 +39,17 @@ class WorldClockTargetDataTest {
 
         assertEquals(data, restored)
         assertTrue(gson.toJson(data).contains("hide_subtitle_on_aod"))
+    }
+
+    @Test
+    fun labelModeNoneClearsLegacyLabelFields() {
+        val data = WorldClockTargetData(
+            customLabel = "Tokyo",
+            showOffsetLabel = true
+        ).withLabelMode(WorldClockComplicationData.LabelMode.NONE)
+
+        assertEquals(WorldClockComplicationData.LabelMode.NONE, data.labelMode)
+        assertEquals("", data.customLabel)
+        assertFalse(data.showOffsetLabel)
     }
 }

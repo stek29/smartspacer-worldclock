@@ -27,9 +27,13 @@
     <string name="custom_label_title">Custom label</string>
     <string name="custom_label_helper">Final SmartSpacer text is limited to 12 characters; labels shorten as needed</string>
     <string name="custom_label_summary">Long labels may be truncated</string>
-    <string name="show_offset_label_title">Show GMT offset label</string>
-    <string name="show_offset_label_summary">Ignored when a custom label is set</string>
+    <string name="label_mode_title">Label</string>
+    <string name="label_mode_none">None</string>
+    <string name="label_mode_timezone">Timezone</string>
+    <string name="label_mode_offset">Offset</string>
+    <string name="label_mode_custom">Custom</string>
     <string name="hide_subtitle_on_aod_title">Hide subtitle on AOD</string>
+    <string name="hide_subtitle_on_aod_summary">Only supported by some Smartspace implementations; unsupported surfaces may still show the subtitle.</string>
     <string name="timezone_search_hint">Search timezones</string>
     <string name="timezone_picker_title">Timezone</string>
     <string name="icon_style_title">Icon</string>

@@ -175,6 +175,8 @@ class TimeFormatterTest {
     fun targetSubtitleUsesUntrimmedCustomLabel() {
         val data = WorldClockTargetData(
             customLabel = "Tokyo Station Long Label"
+        ).withLabelMode(
+            WorldClockComplicationData.LabelMode.CUSTOM
         )
 
         assertEquals("Tokyo Station Long Label", TimeFormatter.buildTargetSubtitle(data))
@@ -184,11 +186,18 @@ class TimeFormatterTest {
     fun targetSubtitleUsesOffsetWhenEnabled() {
         val clock = fixedClock("2026-06-30T12:00:00Z")
         val data = WorldClockTargetData(
-            timezoneId = "Asia/Tokyo",
-            showOffsetLabel = true
-        )
+            timezoneId = "Asia/Tokyo"
+        ).withLabelMode(WorldClockComplicationData.LabelMode.OFFSET)
 
         assertEquals("GMT+9", TimeFormatter.buildTargetSubtitle(data, clock, Locale.US))
+    }
+
+    @Test
+    fun targetSubtitleCanBeDisabled() {
+        val data = WorldClockTargetData()
+            .withLabelMode(WorldClockComplicationData.LabelMode.NONE)
+
+        assertEquals(null, TimeFormatter.buildTargetSubtitle(data))
     }
 
     private fun fixedClock(instant: String): Clock {

@@ -57,10 +57,15 @@ object TimeFormatter {
                     formatCompactTime(zone, instant, locale)
                 }
             }
-        return when {
-            data.customLabel.isNotBlank() -> truncateContent(time, data.customLabel.trim())
-            data.showOffsetLabel -> truncateOffsetContent(time, zone, instant, locale)
-            else -> time
+        return when (data.labelMode) {
+            WorldClockComplicationData.LabelMode.CUSTOM -> {
+                truncateContent(time, data.customLabel.trim())
+            }
+            WorldClockComplicationData.LabelMode.OFFSET -> {
+                truncateOffsetContent(time, zone, instant, locale)
+            }
+            WorldClockComplicationData.LabelMode.NONE,
+            WorldClockComplicationData.LabelMode.TIMEZONE_NAME -> time
         }
     }
 
@@ -77,12 +82,19 @@ object TimeFormatter {
         data: WorldClockSettings,
         clock: Clock = Clock.systemUTC(),
         locale: Locale = Locale.getDefault()
-    ): String {
-        if (data.customLabel.isNotBlank()) return data.customLabel.trim()
-        val zone = ZoneId.of(data.timezoneId)
-        if (data.showOffsetLabel) return formatOffset(zone, clock.instant(), locale)
-        return zone.getDisplayName(TextStyle.FULL, locale).takeIf { it.isNotBlank() }
-            ?: data.timezoneId
+    ): String? {
+        return when (data.labelMode) {
+            WorldClockComplicationData.LabelMode.NONE -> null
+            WorldClockComplicationData.LabelMode.CUSTOM -> data.customLabel.trim()
+            WorldClockComplicationData.LabelMode.OFFSET -> {
+                formatOffset(ZoneId.of(data.timezoneId), clock.instant(), locale)
+            }
+            WorldClockComplicationData.LabelMode.TIMEZONE_NAME -> {
+                val zone = ZoneId.of(data.timezoneId)
+                zone.getDisplayName(TextStyle.FULL, locale).takeIf { it.isNotBlank() }
+                    ?: data.timezoneId
+            }
+        }
     }
 
     fun formatTime(

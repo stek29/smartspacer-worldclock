@@ -7,4 +7,5 @@ interface WorldClockSettings {
     val customLabel: String
     val showOffsetLabel: Boolean
     val iconStyle: WorldClockComplicationData.IconStyle
+    val labelMode: WorldClockComplicationData.LabelMode
 }

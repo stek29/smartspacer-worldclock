@@ -18,6 +18,7 @@ class WorldClockComplicationDataTest {
         assertEquals("", data.customLabel)
         assertEquals(false, data.showOffsetLabel)
         assertEquals(WorldClockComplicationData.IconStyle.HOME, data.iconStyle)
+        assertEquals(WorldClockComplicationData.LabelMode.NONE, data.labelMode)
     }
 
     @Test
@@ -35,5 +36,12 @@ class WorldClockComplicationDataTest {
 
         assertEquals(data, restored)
         assertTrue(gson.toJson(data).contains("time_format"))
+    }
+
+    @Test
+    fun legacyCustomLabelSelectsCustomLabelMode() {
+        val data = WorldClockComplicationData(customLabel = "Tokyo")
+
+        assertEquals(WorldClockComplicationData.LabelMode.CUSTOM, data.labelMode)
     }
 }
