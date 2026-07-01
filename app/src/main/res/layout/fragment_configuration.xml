@@ -286,56 +286,28 @@
                 android:text="@string/time_format_24h_short" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
-        <TextView
-            android:id="@+id/label_mode_title"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/label_mode_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
-            android:text="@string/label_mode_title"
-            android:textAppearance="?attr/textAppearanceTitleMedium"
-            android:textColor="?attr/colorOnSurface" />
+            android:hint="@string/label_mode_title"
+            app:boxBackgroundColor="@color/glass_surface"
+            app:boxBackgroundMode="filled"
+            app:boxCornerRadiusBottomEnd="22dp"
+            app:boxCornerRadiusBottomStart="22dp"
+            app:boxCornerRadiusTopEnd="22dp"
+            app:boxCornerRadiusTopStart="22dp"
+            app:boxStrokeWidth="0dp"
+            app:boxStrokeWidthFocused="0dp"
+            app:endIconMode="dropdown_menu">
 
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/label_mode_group"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            app:checkedButton="@id/label_mode_none"
-            app:selectionRequired="true"
-            app:singleSelection="true">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/label_mode_none"
-                style="@style/Widget.WorldClock.ExpressiveButton"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:text="@string/label_mode_none" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/label_mode_timezone"
-                style="@style/Widget.WorldClock.ExpressiveButton"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:text="@string/label_mode_timezone" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/label_mode_offset"
-                style="@style/Widget.WorldClock.ExpressiveButton"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:text="@string/label_mode_offset" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/label_mode_custom"
-                style="@style/Widget.WorldClock.ExpressiveButton"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:text="@string/label_mode_custom" />
-        </com.google.android.material.button.MaterialButtonToggleGroup>
+            <AutoCompleteTextView
+                android:id="@+id/label_mode_dropdown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/custom_label_container"

@@ -8,6 +8,8 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
@@ -64,8 +66,7 @@ class ConfigurationFragment : Fragment() {
     private lateinit var timezoneTitle: TextView
     private lateinit var timezoneSubtitle: TextView
     private lateinit var timeFormatGroup: MaterialButtonToggleGroup
-    private lateinit var labelModeGroup: MaterialButtonToggleGroup
-    private lateinit var labelModeTimezone: View
+    private lateinit var labelModeDropdown: AutoCompleteTextView
     private lateinit var customLabelContainer: TextInputLayout
     private lateinit var customLabel: TextInputEditText
     private lateinit var hideSubtitleOnAodCard: MaterialCardView
@@ -109,8 +110,7 @@ class ConfigurationFragment : Fragment() {
         timezoneTitle = view.findViewById(R.id.timezone_title)
         timezoneSubtitle = view.findViewById(R.id.timezone_subtitle)
         timeFormatGroup = view.findViewById(R.id.time_format_group)
-        labelModeGroup = view.findViewById(R.id.label_mode_group)
-        labelModeTimezone = view.findViewById(R.id.label_mode_timezone)
+        labelModeDropdown = view.findViewById(R.id.label_mode_dropdown)
         customLabelContainer = view.findViewById(R.id.custom_label_container)
         customLabel = view.findViewById(R.id.custom_label)
         hideSubtitleOnAodCard = view.findViewById(R.id.hide_subtitle_on_aod_card)
@@ -120,11 +120,7 @@ class ConfigurationFragment : Fragment() {
         } else {
             View.GONE
         }
-        labelModeTimezone.visibility = if (type == ConfigurationActivity.Type.TARGET) {
-            View.VISIBLE
-        } else {
-            View.GONE
-        }
+        bindLabelModeAdapter()
     }
 
     private fun applyInsets(view: View) {
@@ -176,15 +172,9 @@ class ConfigurationFragment : Fragment() {
             }
             updateConfig { copy(timeFormat = format) }
         }
-        labelModeGroup.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (bindingConfig || !isChecked) return@addOnButtonCheckedListener
-            val labelMode = when (checkedId) {
-                R.id.label_mode_timezone -> WorldClockComplicationData.LabelMode.TIMEZONE_NAME
-                R.id.label_mode_offset -> WorldClockComplicationData.LabelMode.OFFSET
-                R.id.label_mode_custom -> WorldClockComplicationData.LabelMode.CUSTOM
-                else -> WorldClockComplicationData.LabelMode.NONE
-            }
-            updateLabelMode(labelMode)
+        labelModeDropdown.setOnItemClickListener { _, _, position, _ ->
+            if (bindingConfig) return@setOnItemClickListener
+            updateLabelMode(availableLabelModes()[position])
         }
         customLabel.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
@@ -237,14 +227,7 @@ class ConfigurationFragment : Fragment() {
         } else {
             data.labelMode
         }
-        labelModeGroup.check(
-            when (labelMode) {
-                WorldClockComplicationData.LabelMode.NONE -> R.id.label_mode_none
-                WorldClockComplicationData.LabelMode.TIMEZONE_NAME -> R.id.label_mode_timezone
-                WorldClockComplicationData.LabelMode.OFFSET -> R.id.label_mode_offset
-                WorldClockComplicationData.LabelMode.CUSTOM -> R.id.label_mode_custom
-            }
-        )
+        labelModeDropdown.setText(labelModeLabel(labelMode), false)
         if (customLabel.text?.toString() != data.customLabel) {
             customLabel.setText(data.customLabel)
         }
@@ -421,7 +404,42 @@ class ConfigurationFragment : Fragment() {
                 showOffsetLabel = common.showOffsetLabel,
                 iconStyle = common.iconStyle,
                 hideSubtitleOnAod = hideSubtitleOnAod
+            ).withLabelMode(common.labelMode)
+        }
+    }
+
+    private fun bindLabelModeAdapter() {
+        val labels = availableLabelModes().map { labelModeLabel(it) }
+        labelModeDropdown.setAdapter(
+            ArrayAdapter(requireContext(), android.R.layout.simple_list_item_1, labels)
+        )
+    }
+
+    private fun availableLabelModes(): List<WorldClockComplicationData.LabelMode> {
+        return if (type == ConfigurationActivity.Type.TARGET) {
+            listOf(
+                WorldClockComplicationData.LabelMode.TIMEZONE_NAME,
+                WorldClockComplicationData.LabelMode.OFFSET,
+                WorldClockComplicationData.LabelMode.CUSTOM,
+                WorldClockComplicationData.LabelMode.NONE
+            )
+        } else {
+            listOf(
+                WorldClockComplicationData.LabelMode.NONE,
+                WorldClockComplicationData.LabelMode.OFFSET,
+                WorldClockComplicationData.LabelMode.CUSTOM
             )
         }
+    }
+
+    private fun labelModeLabel(labelMode: WorldClockComplicationData.LabelMode): String {
+        return getString(
+            when (labelMode) {
+                WorldClockComplicationData.LabelMode.NONE -> R.string.label_mode_none
+                WorldClockComplicationData.LabelMode.TIMEZONE_NAME -> R.string.label_mode_timezone
+                WorldClockComplicationData.LabelMode.OFFSET -> R.string.label_mode_offset
+                WorldClockComplicationData.LabelMode.CUSTOM -> R.string.label_mode_custom
+            }
+        )
     }
 }
