@@ -162,6 +162,16 @@
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <TextView
+            android:id="@+id/target_icon_note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/target_icon_note"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:visibility="gone" />
+
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
@@ -286,28 +296,41 @@
                 android:text="@string/time_format_24h_short" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/label_mode_container"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
-            android:hint="@string/label_mode_title"
-            app:boxBackgroundColor="@color/glass_surface"
-            app:boxBackgroundMode="filled"
-            app:boxCornerRadiusBottomEnd="22dp"
-            app:boxCornerRadiusBottomStart="22dp"
-            app:boxCornerRadiusTopEnd="22dp"
-            app:boxCornerRadiusTopStart="22dp"
-            app:boxStrokeWidth="0dp"
-            app:boxStrokeWidthFocused="0dp"
-            app:endIconMode="dropdown_menu">
+            android:text="@string/label_mode_title"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="?attr/colorOnSurface" />
 
-            <AutoCompleteTextView
-                android:id="@+id/label_mode_dropdown"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/label_mode_card"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="10dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            app:cardBackgroundColor="@color/glass_surface"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/glass_stroke"
+            app:strokeWidth="1dp">
+
+            <TextView
+                android:id="@+id/label_mode_value"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="none" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:layout_height="match_parent"
+                android:drawableEnd="@android:drawable/arrow_down_float"
+                android:drawablePadding="12dp"
+                android:ellipsize="end"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:paddingHorizontal="20dp"
+                android:textAppearance="?attr/textAppearanceTitleMedium"
+                android:textColor="?attr/colorOnSurface" />
+        </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/custom_label_container"
@@ -335,6 +358,43 @@
                 android:inputType="textCapWords"
                 android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/show_label_in_subtitle_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/glass_surface"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/glass_stroke"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/show_label_in_subtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:paddingHorizontal="20dp"
+                    android:text="@string/show_label_in_subtitle_title"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="20dp"
+                    android:paddingBottom="16dp"
+                    android:text="@string/show_label_in_subtitle_summary"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/hide_subtitle_on_aod_card"

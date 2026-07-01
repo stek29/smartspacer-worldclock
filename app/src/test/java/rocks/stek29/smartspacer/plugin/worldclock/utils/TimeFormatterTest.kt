@@ -183,6 +183,28 @@ class TimeFormatterTest {
     }
 
     @Test
+    fun targetTitleLabelIsNotTruncated() {
+        val data = WorldClockTargetData(
+            customLabel = "Tokyo Station Long Label"
+        ).withLabelMode(
+            WorldClockComplicationData.LabelMode.CUSTOM
+        )
+
+        assertEquals(
+            "21:00 Tokyo Station Long Label",
+            TimeFormatter.appendTargetLabel("21:00", data)
+        )
+    }
+
+    @Test
+    fun targetTitleLabelCanBeDisabled() {
+        val data = WorldClockTargetData()
+            .withLabelMode(WorldClockComplicationData.LabelMode.NONE)
+
+        assertEquals("21:00", TimeFormatter.appendTargetLabel("21:00", data))
+    }
+
+    @Test
     fun targetSubtitleUsesOffsetWhenEnabled() {
         val clock = fixedClock("2026-06-30T12:00:00Z")
         val data = WorldClockTargetData(

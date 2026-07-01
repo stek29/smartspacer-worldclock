@@ -20,6 +20,7 @@ class WorldClockTargetDataTest {
         assertFalse(data.showOffsetLabel)
         assertEquals(WorldClockComplicationData.IconStyle.HOME, data.iconStyle)
         assertEquals(WorldClockComplicationData.LabelMode.TIMEZONE_NAME, data.labelMode)
+        assertFalse(data.showLabelInSubtitle)
         assertFalse(data.hideSubtitleOnAod)
     }
 
@@ -32,12 +33,14 @@ class WorldClockTargetDataTest {
             timeFormat = WorldClockComplicationData.TimeFormat.HOUR_24,
             customLabel = "Tokyo",
             showOffsetLabel = true,
+            showLabelInSubtitle = true,
             hideSubtitleOnAod = true
         )
 
         val restored = gson.fromJson(gson.toJson(data), WorldClockTargetData::class.java)
 
         assertEquals(data, restored)
+        assertTrue(gson.toJson(data).contains("show_label_in_subtitle"))
         assertTrue(gson.toJson(data).contains("hide_subtitle_on_aod"))
     }
 

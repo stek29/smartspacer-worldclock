@@ -35,6 +35,8 @@ class WorldClockTarget : SmartspacerTargetProvider() {
         if (!TimeFormatter.isVisible(data)) return emptyList()
         val context = provideContext()
         val icon = WorldClockIconStyle.drawableFor(data.iconStyle)
+        val subtitle = if (data.showLabelInSubtitle) TimeFormatter.buildTargetLabel(data) else null
+        val canShowSubtitle = subtitle != null
         return listOf(
             TargetTemplate.Basic(
                 id = "worldclock_target_$smartspacerId",
@@ -43,14 +45,20 @@ class WorldClockTarget : SmartspacerTargetProvider() {
                     AndroidIcon.createWithResource(context, icon),
                     WorldClockIconStyle.labelFor(context, data.iconStyle)
                 ),
-                title = Text(TimeFormatter.buildTargetTitle(context, data)),
-                subtitle = TimeFormatter.buildTargetSubtitle(data)?.let { Text(it) },
+                title = Text(
+                    if (data.showLabelInSubtitle) {
+                        TimeFormatter.buildTargetTitle(context, data)
+                    } else {
+                        TimeFormatter.buildTargetTitleWithLabel(context, data)
+                    }
+                ),
+                subtitle = subtitle?.let { Text(it) },
                 onClick = getClickAction()
             ).create().apply {
-                canTakeTwoComplications = true
+                canTakeTwoComplications = !canShowSubtitle
                 canBeDismissed = false
                 hideIfNoComplications = false
-                hideSubtitleOnAod = data.hideSubtitleOnAod
+                hideSubtitleOnAod = canShowSubtitle && data.hideSubtitleOnAod
             }
         )
     }

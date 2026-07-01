@@ -78,7 +78,27 @@ object TimeFormatter {
         return formatTime(context, zone, data.timeFormat, clock.instant())
     }
 
-    fun buildTargetSubtitle(
+    fun buildTargetTitleWithLabel(
+        context: Context,
+        data: WorldClockSettings,
+        clock: Clock = Clock.systemUTC(),
+        locale: Locale = Locale.getDefault()
+    ): String {
+        val time = buildTargetTitle(context, data, clock)
+        return appendTargetLabel(time, data, clock, locale)
+    }
+
+    fun appendTargetLabel(
+        time: String,
+        data: WorldClockSettings,
+        clock: Clock = Clock.systemUTC(),
+        locale: Locale = Locale.getDefault()
+    ): String {
+        val label = buildTargetLabel(data, clock, locale) ?: return time
+        return "$time$SEPARATOR$label"
+    }
+
+    fun buildTargetLabel(
         data: WorldClockSettings,
         clock: Clock = Clock.systemUTC(),
         locale: Locale = Locale.getDefault()
@@ -86,6 +106,7 @@ object TimeFormatter {
         return when (data.labelMode) {
             WorldClockComplicationData.LabelMode.NONE -> null
             WorldClockComplicationData.LabelMode.CUSTOM -> data.customLabel.trim()
+                .takeIf { it.isNotBlank() }
             WorldClockComplicationData.LabelMode.OFFSET -> {
                 formatOffset(ZoneId.of(data.timezoneId), clock.instant(), locale)
             }
@@ -95,6 +116,14 @@ object TimeFormatter {
                     ?: data.timezoneId
             }
         }
+    }
+
+    fun buildTargetSubtitle(
+        data: WorldClockSettings,
+        clock: Clock = Clock.systemUTC(),
+        locale: Locale = Locale.getDefault()
+    ): String? {
+        return buildTargetLabel(data, clock, locale)
     }
 
     fun formatTime(

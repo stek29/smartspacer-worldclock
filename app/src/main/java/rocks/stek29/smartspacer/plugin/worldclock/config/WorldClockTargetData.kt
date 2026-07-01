@@ -20,6 +20,8 @@ data class WorldClockTargetData(
         WorldClockComplicationData.IconStyle.HOME,
     @SerializedName("label_mode")
     private val storedLabelMode: WorldClockComplicationData.LabelMode? = null,
+    @SerializedName("show_label_in_subtitle")
+    val showLabelInSubtitle: Boolean = false,
     @SerializedName("hide_subtitle_on_aod")
     val hideSubtitleOnAod: Boolean = false
 ) : WorldClockSettings {

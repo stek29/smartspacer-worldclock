@@ -32,6 +32,8 @@
     <string name="label_mode_timezone">Timezone</string>
     <string name="label_mode_offset">Offset</string>
     <string name="label_mode_custom">Custom</string>
+    <string name="show_label_in_subtitle_title">Show label in subtitle</string>
+    <string name="show_label_in_subtitle_summary">Disables complications on this target.</string>
     <string name="hide_subtitle_on_aod_title">Hide subtitle on AOD</string>
     <string name="hide_subtitle_on_aod_summary">Only supported by some Smartspace implementations; unsupported surfaces may still show the subtitle.</string>
     <string name="timezone_search_hint">Search timezones</string>
@@ -43,6 +45,7 @@
     <string name="icon_style_work">Work</string>
     <string name="icon_style_travel">Travel</string>
     <string name="icon_style_globe">Globe</string>
+    <string name="target_icon_note">This icon is used in the target list. It appears on the target only when the label is shown in subtitle.</string>
     <string name="requirement_timezone_offset_label">Timezone Offset</string>
     <string name="requirement_timezone_offset_description">Only show when the selected timezone has a different GMT offset from this device.</string>
     <string name="requirement_timezone_offset_description_configured">Only show when %1$s (%2$s) differs from this device (%3$s).</string>
