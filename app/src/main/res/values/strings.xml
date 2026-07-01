@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <string name="app_name">SmartSpacer World Clock</string>
+    <string name="app_name">Smartspacer World Clock</string>
     <string name="configuration_title">World Clock</string>
-    <string name="preview_title">SmartSpacer preview</string>
+    <string name="preview_title">Smartspacer preview</string>
     <string name="preview_visible">Visible</string>
     <string name="preview_hidden_home">Hidden in Home mode for the current device timezone</string>
     <string name="complication_world_clock_label">World Clock</string>
@@ -25,7 +25,7 @@
     <string name="time_format_12h_short">12h</string>
     <string name="time_format_24h_short">24h</string>
     <string name="custom_label_title">Custom label</string>
-    <string name="custom_label_helper">Final SmartSpacer text is limited to 12 characters; labels shorten as needed</string>
+    <string name="custom_label_helper">Final Smartspacer text is limited to 12 characters; labels shorten as needed</string>
     <string name="custom_label_summary">Long labels may be truncated</string>
     <string name="label_mode_title">Label</string>
     <string name="label_mode_none">None</string>

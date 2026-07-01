@@ -1,51 +1,51 @@
-# SmartSpacer World Clock
+# Smartspacer World Clock
 
-SmartSpacer World Clock is a standalone SmartSpacer plugin that provides a world clock target and a compact text-based complication showing the current time in a configured timezone. It also provides a SmartSpacer Requirement for showing any target or complication only when a selected timezone has a different current GMT offset from the device.
+Smartspacer World Clock is a standalone Smartspacer plugin that provides a world clock target and a compact text-based complication showing the current time in a configured timezone. It also provides a Smartspacer Requirement for showing any target or complication only when a selected timezone has a different current GMT offset from the device.
 
 Each target and complication instance has independent settings for timezone, mode, time format, icon, and label.
 
 ## Features
 
 - Multiple independent target and complication instances.
-- Target support with full title/subtitle display, optional AOD subtitle hiding, and support for attached SmartSpacer complications.
-- Compact complication support for showing the world clock alongside other SmartSpacer targets.
+- Target support with full title/subtitle display, optional AOD subtitle hiding, and support for attached Smartspacer complications.
+- Compact complication support for showing the world clock alongside other Smartspacer targets.
 - Normal mode: always visible.
 - Home mode: visible only when the device's current UTC offset differs from the configured home timezone's current UTC offset.
 - DST-aware offset comparison.
 - System, 12-hour, or 24-hour time format.
 - Optional custom label or dynamic GMT offset label.
-- Minute-level updates via SmartSpacer broadcast provider while the target or complication is visible.
+- Minute-level updates via Smartspacer broadcast provider while the target or complication is visible.
 - Tap action opens the system clock/alarms app.
-- Timezone Offset Requirement: can be attached to SmartSpacer targets or complications to require that a selected timezone's current GMT offset differs from the device's current GMT offset.
+- Timezone Offset Requirement: can be attached to Smartspacer targets or complications to require that a selected timezone's current GMT offset differs from the device's current GMT offset.
 
 ## Requirement provider
 
 The Timezone Offset Requirement is configured separately from World Clock targets and complications. Its setup screen contains a status preview and a timezone selector, reusing the same timezone picker as the world clock configuration.
 
-The requirement is met when the selected timezone and the device timezone currently have different GMT offsets. To require matching offsets instead, use SmartSpacer's built-in invert option on the requirement.
+The requirement is met when the selected timezone and the device timezone currently have different GMT offsets. To require matching offsets instead, use Smartspacer's built-in invert option on the requirement.
 
 ## Battery behaviour
 
-Home mode avoids registering per-minute `ACTION_TIME_TICK` updates while a target or complication is hidden because the device's current UTC offset matches the configured home timezone. It still listens for time, timezone, and date changes so SmartSpacer can re-check whether the item should become visible.
+Home mode avoids registering per-minute `ACTION_TIME_TICK` updates while a target or complication is hidden because the device's current UTC offset matches the configured home timezone. It still listens for time, timezone, and date changes so Smartspacer can re-check whether the item should become visible.
 
 This intentionally trades a small amount of DST-transition precision for lower idle wakeups: if two zones have the same offset and later diverge only because of a daylight-saving transition, the hidden target, complication, or timezone-offset requirement may not update until the next date/time/timezone broadcast rather than exactly at the transition minute.
 
 ## Requirements
 
 - Android minSdk 29.
-- SmartSpacer installed on the device.
+- Smartspacer installed on the device.
 - JDK 17.
 - Android SDK platform `android-37.0`.
 - Gradle wrapper included in this repo.
 
-The build intentionally matches SmartSpacer's current SDK toolchain:
+The build intentionally matches Smartspacer's current SDK toolchain:
 
 ```properties
 android.builtInKotlin=false
 android.newDsl=false
 ```
 
-This allows the project to use Kotlin Android plugin `2.4.0`, which is required by the published SmartSpacer SDK `1.1.2`.
+This allows the project to use Kotlin Android plugin `2.4.0`, which is required by the published Smartspacer SDK `1.1.2`.
 
 ## Build
 
