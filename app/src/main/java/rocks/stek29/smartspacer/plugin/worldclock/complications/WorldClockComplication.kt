@@ -57,7 +57,7 @@ class WorldClockComplication : SmartspacerComplicationProvider() {
                     context.getString(R.string.settings_description_home, data.timezoneId)
                 }
                 data != null -> context.getString(R.string.settings_description_zone, data.timezoneId)
-                else -> context.getString(R.string.complication_world_clock_description)
+                else -> context.getText(R.string.complication_world_clock_description)
             },
             icon = AndroidIcon.createWithResource(context, icon),
             allowAddingMoreThanOnce = true,
